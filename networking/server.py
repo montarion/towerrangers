@@ -45,6 +45,8 @@ class Server:
             print(data)
             self.process(data)
 
+
+
     def process(self, data):
         data = json.loads(data)
         keylist = list(data.keys())
@@ -57,6 +59,7 @@ class Server:
                     self.assign(self.conn)
             if key == "keypress":
                 # keypress stuff, send to everyone and such
+
                 pass
 
 
