@@ -1,6 +1,7 @@
-import socket, json, threading, sys
+import socket, json, threading, sys, GameLogic
 from time import sleep
 from bge import logic, events
+
 
 
 ### THIS IS THE CLIENT ###
@@ -12,12 +13,15 @@ class Networking:
         print("Initializing network..")
         self.lastsent = ""
         self.role = "unknown"
+        self.playerdicts = []
+        self.scene = GameLogic.getCurrentScene()
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.connect(('localhost', 6000))
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
+        print(self.scene.objects)
 
     def listener(self):
         print("Started listener")
@@ -43,10 +47,16 @@ class Networking:
             if key == "role":
                 self.role = data[key]
                 self.s.connect(('localhost', 6000))
+            if key == "player": # get player dict
+                self.playerdicts.append(data[key])
+            if key == "move":
+                name = data[key][0]
+                keypress = data[key][1] # list looks like [str(name), str(keypress)]
 
-    def move(self, keypress):
+                #self.move(keypress, )
+    def move(self, keypress, playerobject):
         if keypress == "w":
-            self.obj.applyMovement((0, -0.1, 0), True)
+            playerobject.applyMovement((0, -0.1, 0), True)
 
     def detectmovement(self):
         keyb = logic.keyboard
