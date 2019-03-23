@@ -9,12 +9,14 @@ from bge import logic, events
 class Networking:
     def __init__(self):
         self.obj = logic.getCurrentController()
+        self.owner = self.obj.owner
         print("Initializing network..")
         self.lastsent = ""
         self.role = "unknown"
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.connect(('localhost', 6000))
+        self.ipaddr = "localhost"
+        self.s.connect((self.ipaddr, 6000))
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
@@ -38,15 +40,28 @@ class Networking:
     def process(self, data):
         data = json.loads(data)
         keylist = list(data.keys())
-        print(keylist)
+        print("keylist" + str(keylist))
         for key in keylist:
             if key == "role":
                 self.role = data[key]
-                self.s.connect(('localhost', 6000))
+                print("ROLE IS: " + self.role)
+                self.sender({"cmd": "search"})
+                #self.s.connect(('localhost', 6000))
+            if key == "room":
+                print("room")
+                portnumber = data[key]
+                self.s.close()
 
+                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                self.s.connect((self.ipaddr, portnumber))
+                print("connected to room")
+                self.move("w")
+
+#
     def move(self, keypress):
         if keypress == "w":
-            self.obj.applyMovement((0, -0.1, 0), True)
+            self.owner.applyMovement((0, -0.1, 0), True)
 
     def detectmovement(self):
         keyb = logic.keyboard

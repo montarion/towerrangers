@@ -1,5 +1,5 @@
-import socket, random, json
-
+import socket, random, json, threading
+from time import sleep
 
 class Server:
     def __init__(self):
@@ -12,8 +12,10 @@ class Server:
         self.role = "empty"
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #self.s.setblocking(False)
         self.s.bind(addr)
         self.s.listen(5000)
+        self.processing = False
 
 
 
@@ -31,20 +33,32 @@ class Server:
             else:
                 self.role = self.rolelist[1]
         msg = {"role": self.role}
+        print(self.role)
         self.sender(conn, msg)
         print("role chosen and sent")
-        conn.close()
+        #conn.close()
 
     def listen(self):
+        print("listening..")
 
         while True:
-            print("listening..")
-            self.conn, ipaddr = self.s.accept()
-            print("accepted from " + str(ipaddr))
+            print(self.processing)
+            if not self.processing:
+                self.conn, ipaddr = self.s.accept()
+                print("accepted from " + str(ipaddr))
+                self.processing = True
+            print("listening for messages...")
+
             data = str(self.conn.recv(1024))[2:-1]
             print(data)
             self.process(data)
 
+
+    def sender(self, conn, msg):
+        try:
+            conn.send(bytes(json.dumps(msg), "utf-8"))
+        except Exception as e:
+            print(e)
 
 
     def process(self, data):
@@ -57,14 +71,44 @@ class Server:
                     print(data)
                     print("got new!")
                     self.assign(self.conn)
-            if key == "keypress":
-                # keypress stuff, send to everyone and such
+                    # matchmaking
+                if data[key] == "search":
+                    # send to room
+                    portnumber = random.randint(60000, 65000)
+                    msg = {"room": portnumber}
+                    self.sender(self.conn, msg)
+                    self.conn.close()
+                    self.processing = False
+                    threading.Thread(target=self.room, args=[portnumber]).start()
+                    print("Thread started")
+                    # spawn new listener and shit ( on new thread) DONE
+                    # close this connection DONE
+                    pass
 
-                pass
 
+    def room(self, portnumber):
+        print("IN ROOM")
+        host = "localhost"
+        port = portnumber
+        addr = (host, port)
 
-    def sender(self, conn, message):
-        conn.sendall(bytes(json.dumps(message), encoding="utf-8"))
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(addr)
+        s.listen(5)
 
+        conn, ipaddr = s.accept()
+        print("accepted from " + str(ipaddr))
+        while True:
+            print("waiting for keypresses")
+            data = str(conn.recv(1024))[2:-1]
+            data = json.loads(data)
+            keylist = list(data.keys())
+            print(keylist)
+            for key in keylist:
+                # check if ready
+                if key == "keypress":
+                    # keypress stuff, send to everyone and such
+                    pass
 
 Server().listen()
