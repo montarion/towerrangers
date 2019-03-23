@@ -55,7 +55,6 @@ class Networking:
                 self.role = data[key]
                 print("ROLE IS: " + self.role)
                 self.sender({"cmd": "search"})
-                self.s.connect(('localhost', 6000))
             if key == "player": # get player dict
                 self.playerdicts.append(data[key])
             if key == "move":
@@ -66,11 +65,20 @@ class Networking:
                 print("room")
                 portnumber = data[key]
                 self.s.close()
+                print(self.s)
                 self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 self.s.connect((self.ipaddr, portnumber))
                 print("connected to room")
-                self.move("w")
+                # room init
+                message = {"roominit": self.role}
+                self.sender(message)
+                #self.move("w", self.obj)
+            if key == "spawn":
+                print("got spawn request")
+                playerdict = data[key]
+                self.scene.addObject("testplayer")
+
 
     def move(self, keypress, playerobject):
         if keypress == "w":
