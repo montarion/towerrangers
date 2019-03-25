@@ -16,7 +16,6 @@ class Server:
         self.s.listen(5000)
 
 
-
     def assign(self, conn):
         if len(self.connectiondict) != 1:
             # no one in it yet
@@ -34,7 +33,6 @@ class Server:
         self.sender(conn, msg)
         print("role chosen and sent")
         conn.close()
-
     def listen(self):
 
         while True:
