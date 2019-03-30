@@ -29,7 +29,11 @@ class Networking:
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
+        # get self object
+        self.obj = self.scene.objects["Cube"]
         print(self.scene.objects)
+
+
 
     def listener(self):
         print("Started listener")
@@ -62,6 +66,10 @@ class Networking:
                 if key == "role":
                     self.role = data[key]
                     print("ROLE IS: " + self.role)
+                    # link role to self
+                    self.obj["role"] = self.role
+                    print(self.obj["role"])
+
                     self.sender({"cmd": "search"})
                 if key == "player": # get player dict
                     self.playerdicts.append(data[key])
@@ -102,7 +110,7 @@ class Networking:
                     print("got move request")
                     playerrole = data[key][0]
                     directionkey = data[key][1]
-                    obj = self.getobjectbyname(playerrole)
+                    obj = self.getobjectbyid(playerrole)
                     self.move(directionkey, obj)
         except Exception:
             print("Processing error!")
@@ -110,9 +118,17 @@ class Networking:
             traceback.print_exc()
 
 
-    def getobjectbyname(self, object):
-        obj = self.scene.objects["testplayer"] # needs to be attacker/defender/minion. figure out how to change object name dynamically
-        return obj
+    def getobjectbyid(self, id):
+        print("getting id")
+        for object in self.scene.objects:
+
+            try:
+                print(object)
+                print(object["role"])
+                if object["role"] == id:
+                   return object
+            except:
+                pass
 
     def move(self, keypress, playerobject):
         if keypress == "w":
