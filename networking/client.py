@@ -114,7 +114,6 @@ class Networking:
                 self.s.close()
             self.lastsent = message
 
-
 networking = Networking()
 
 

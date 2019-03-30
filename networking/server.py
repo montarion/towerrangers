@@ -21,7 +21,6 @@ class Server:
         self.processing = False
 
 
-
     def assign(self, conn):
         print(len(self.roledict))
         if len(self.roledict) != 1:
