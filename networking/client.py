@@ -162,7 +162,6 @@ class Networking:
                 pass
             #self.lastsent = message
 
-
 networking = Networking()
 
 
