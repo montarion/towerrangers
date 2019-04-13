@@ -201,7 +201,7 @@ class Server:
                     if self.roomdict[roomnumber][0] == 2:
                         print("THREAD: ROOM {} IS FULL".format(roomnumber))
                         #processing = True
-                        #roomfull = True
+                        roomfull = True
 
                 # get data from both clients:
                 if roomfull: # meaning both clients are in roomconndict
