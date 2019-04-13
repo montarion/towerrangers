@@ -1,9 +1,9 @@
-import socket, random, json, threading, traceback
+import socket, random, json, threading, traceback, select
 from time import sleep
 
 class Server:
     def __init__(self):
-        host = "localhost"
+        host = "0.0.0.0"
         port = 5555
         addr = (host, port)
 
@@ -12,6 +12,8 @@ class Server:
         self.roledict = {}
         self.rolelist = ["attacker", "defender"]
         self.role = "empty"
+        self.roomconndict = {}
+
 
         self.roomdict = {1: [0, 60000]} # looks like {1: [0players/1player/2players, portnumber]}
         threading.Thread(target=self.room, args=[1, 60000]).start()
@@ -24,23 +26,19 @@ class Server:
 
 
     def assign(self, conn):
-        print(len(self.roledict))
+        #print(len(self.roledict))
         if len(self.roledict) != 1:
             # no one in it yet
-            print("first to get assigned")
+            #print("first to get assigned")
             self.role = self.rolelist[random.randint(0,1)]
             print("first role is: " + self.role)
-
             self.roledict[self.role] = [conn]
             self.connectiondict[self.role] = [conn]
         else:
-            print("second to get assigned")
+            #print("second to get assigned")
+            self.role = self.rolelist[0]
             print("second role is: " + self.role)
-            if self.role == self.rolelist[0]:
-                self.role = self.rolelist[1]
-            else:
-                self.role = self.rolelist[1]
-            self.connectiondict[self.role] = [conn]
+
             # clear roles
             self.roledict = {}
         msg = {"role": self.role}
@@ -61,19 +59,28 @@ class Server:
                 self.processing = True
 
             data = str(self.conn.recv(1024))[2:-1]
+            #print("datatype1: ", type(data))
 
             if len(data) > 2:
+                # filter data
+                if data.count("}") > 1:
+                    data = data.split("}")[0] + "}"
+                    print("HAD TO FILTER")
                 print("DATA IS: " + data)
                 self.process(data)
 
 
     def sender(self, conn, msg):
+
         try:
             conn.sendall(bytes(json.dumps(msg), "utf-8"))
         except Exception as e:
             traceback.print_exc()
 
     def process(self, data):
+        if "}{" in data:
+            data = data.split("}{")[0] + "}"
+            print("HAD TO FILTER")
         data = json.loads(data)
         keylist = list(data.keys())
         #print(keylist)
@@ -81,7 +88,7 @@ class Server:
             if key == "cmd":
                 if data[key] == "marco!":
                     print("\n\n------------MARCO------------------\n\n")
-                    print(data)
+                    #print(data)
                     print("got new!")
                     self.assign(self.conn)
                     # matchmaking
@@ -101,6 +108,8 @@ class Server:
                             msg = {"room": portnumber}
                             self.sender(self.conn, msg)
                             print("sent room message")
+
+                            # add person to room
                             self.roomdict[roomnumber][0] = 1
                             self.processing = False
                         elif self.roomdict[roomnumber][0] == 1:
@@ -126,7 +135,6 @@ class Server:
 
                             # number of rooms is
                             numberOfRooms = len(self.roomdict)
-                            print(numberOfRooms)
                             print("Creating new room with number: {}".format(numberOfRooms + 1))
                             portnumber = random.randint(60000, 65000)
                             msg = {"room": portnumber}
@@ -140,8 +148,8 @@ class Server:
 
                         if len(self.tempdict) > 0:
                             self.roomdict = self.tempdict
-                        print("ROOMDICT")
-                        print(self.roomdict)
+                        #print("ROOMDICT")
+                        #print(self.roomdict)
 
                     # spawn new listener and shit ( on new thread) DONE
                     # close this connection DONE
@@ -151,73 +159,150 @@ class Server:
     def room(self, roomnumber, portnumber):
         processing = False
 
-        host = "localhost"
+        host = "0.0.0.0"
         port = portnumber
         addr = (host, port)
         roomfull = False
         roomconndict = {}
+        playerobject = {}
+        data = ""
+        connlist = []
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(addr)
-        s.listen(5)
+        s.listen(50)
 
 
         while True:
-            print("\n\n------------ROOM--{}----------------\n\n".format(str(roomnumber)))
+            #print("\n\n------------ROOM--{}----------------\n\n".format(str(roomnumber)))
             #mechaniscm to make sure we always accept keypresses when full
             if roomfull:
                 processing = True
-            #print(self.connectiondict)
-            #print("ROOMDICT IS: {}".format(self.roomdict[roomnumber]))
-            #print(self.roomdict[roomnumber])
-            #print("roomdict number is {}".format(self.roomdict[roomnumber][0]))
 
-            #print(self.roomdict)
-            #print(processing)
             if not processing:
                 print("ROOM: accepting...")
                 #print(self.roomdict)
                 conn, ipaddr = s.accept()
+                connlist.append(conn) # for select
+
                 print("THREAD: accepted from " + str(ipaddr))
+                #threading.Thread(target=self.roomprocessing, args=[roomnumber, conn]).start()
 
                 processing = True
             else:
-                if self.roomdict[roomnumber][0] != 2:
-                    print(self.roomdict[roomnumber])
-                    print("Waiting for other player...")
-                    #processing = False
-                if self.roomdict[roomnumber][0] == 2:
-                    print("THREAD: ROOM {} IS FULL".format(roomnumber))
-                    #processing = True
-                    roomfull = True
+                #print("NOT PROCESSING")
+                if not roomfull:
+                    #print("ROOM NOT FULL")
+                    if self.roomdict[roomnumber][0] != 2:
+                        #print(self.roomdict[roomnumber])
+                        print("Waiting for other player...")
+                        processing = False
+                    if self.roomdict[roomnumber][0] == 2:
+                        print("THREAD: ROOM {} IS FULL".format(roomnumber))
+                        #processing = True
+                        #roomfull = True
 
-                print("waiting for keypresses")
-                data = str(conn.recv(1024))[2:-1]
-                data = json.loads(data)
-                keylist = list(data.keys())
-                print(keylist)
-                for key in keylist:
-                    # check if ready
-                    if key == "roominit":
-                        print("ROOMINIT: {}".format(data[key]))
-                        if not data["role"] in roomconndict:
-                            roomconndict[data["role"]] = conn
-                        # spawn other units already there
-                        playerobject = {"name": "testplayer"}
-                        msg = {"spawn": playerobject} # {"spawn": {playerobject}}
-                        self.sender(conn, msg)
-                        #processing = False
-                        processing = True
-                    if key == "keypress":
-                        directionkey = data[key]
-                        print(directionkey)
-                        msg = {"move": [data["role"], directionkey]}
+                # get data from both clients:
+                if roomfull: # meaning both clients are in roomconndict
+                    #print("ROOM FULL")
+                    #print(roomconndict)
+                    #data = str(conn.recv(1024))[2:-1]
+                    ready_socks, _, _ = select.select(connlist, [], [], 1)
+                    for sock in ready_socks:
+                        data = str(sock.recv(1024))[2:-1]  # This is will not block
+                        print("received message:", data)
+                else:
+                    try:
+                        data = str(conn.recv(1024))[2:-1]
+                    except TimeoutError: # non-fatal error for when nonblocking sockets have no data
+                        print("no data...")
 
-                        for player in roomconndict: # {"attacker": <socket>}
-                            self.sender(roomconndict[player], msg)
-                        # keypress stuff, send to everyone and such
+                if data:
+                    print("\n\n{}\n\n".format(data))
+                    if "}{" in data:
+                        data = data.split("}{")[0] + "}"
+                        print("HAD TO FILTER")
 
-                #processing = False
+                    data = json.loads(str(data).replace("'", "\""))
+                    print("\n\n{}\n\n".format(data))
+                    keylist = list(data.keys())
+                    #print(keylist)
+                    for key in keylist:
+                        if key == "roominit":
+                            #print("ROOMINIT: {}".format(data[key]))
+                            if not data["role"] in roomconndict:
+                                print("ADDING {} TO ROOMCONNDICT".format(data["role"]))
+                                roomconndict[data["role"]] = conn
+                            if len(roomconndict) == 2:
+                                roomfull = True
+
+                            # spawn other units already there
+                            playerobject[data["role"]] = {"name": "testplayer", "role": data["role"]}
+                            msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
+                            for player in roomconndict:  # {"attacker": <socket>}
+                                print("sent to {}".format(player))
+                                self.sender(roomconndict[player], msg)
+                            processing = False
+                            # processing = True
+
+                        if key == "keypress":
+                            directionkey = data[key]
+
+                            msg = {"move": [data["role"], directionkey]}
+
+                            for player in roomconndict:  # {"attacker": <socket>}
+                                self.sender(roomconndict[player], msg)
+                            # keypress stuff, send to everyone and such
+
+                    # processing = False
+
+
+
+    def roomprocessing(self, roomnumber, conn):
+
+        self.roomconndict[roomnumber] = {}
+        playerobject = {}
+
+        while True:
+            print("\n\n------------ROOMPROCESSING------------------\n\n")
+            print("waiting for keypresses")
+
+
+            data = str(conn.recv(1024))[2:-1]
+            print("\n\n{}\n\n".format(data))
+            if "}{" in data:
+                data = data.split("}{")[0] + "}"
+                print("HAD TO FILTER")
+            data = json.loads(data)
+            print("\n\n{}\n\n".format(data))
+            keylist = list(data.keys())
+            print(keylist)
+            for key in keylist:
+                if key == "roominit":
+                    print("ROOMINIT: {}".format(data[key]))
+                    if not data["role"] in self.roomconndict[roomnumber]:
+                        #TODO fix values not getting into roomconndict properly(they overwrite eachother now)
+                        self.roomconndict[roomnumber][data["role"]] = conn
+                    print(self.roomconndict)
+                    # spawn other units already there
+                    playerobject[data["role"]] = {"name": "testplayer", "role": data["role"]}
+                    msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
+                    for player in self.roomconndict[roomnumber]:  # {"attacker": <socket>}
+                        print("sent to {}".format(player))
+                        self.sender(self.roomconndict[roomnumber][player], msg)
+                    processing = False
+                    # processing = True
+
+                if key == "keypress":
+                    directionkey = data[key]
+                    print(directionkey)
+                    msg = {"move": [data["role"], directionkey]}
+
+                    for player in self.roomconndict[roomnumber]:  # {"attacker": <socket>}
+                        self.sender(self.roomconndict[roomnumber][player], msg)
+                    # keypress stuff, send to everyone and such
+
+            # processing = False
 Server().listen()
 
