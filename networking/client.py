@@ -21,7 +21,7 @@ class Networking:
         self.roomset = False
         self.enemyspawned = False
         self.stop = "µ"
-        self.stoptrap = False # if true, don't send.
+        self.stoptrap = True # if true, don't send.
         self.scene = GameLogic.getCurrentScene()
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -70,8 +70,8 @@ class Networking:
             for key in keylist:
                 if key == "role":
                     # hardcoding for test HARDCODED
-                    #self.role = data[key]
-                    self.role = "defender"
+                    self.role = data[key]
+
                     print("ROLE IS: " + self.role)
                     # link role to self
                     self.obj["role"] = self.role
@@ -122,7 +122,7 @@ class Networking:
                     playerrole = data[key][0]
                     print("looking for" + playerrole)
                     directionkey = data[key][1]
-                    obj = self.getobjectbyid(playerrole)
+                    obj = self.getobjectbyid(playerrole) # role is used as id here
                     self.move(directionkey, obj)
         except Exception:
             print("Processing error!")
@@ -142,6 +142,7 @@ class Networking:
 
     def move(self, keypress, playerobject):
         # SPEEDS NEED TO BE TIMES 2 IF IT'S NOT YOURSELF. network crap I guess..
+        print(playerobject)
         if keypress == "w":
             playerobject.applyMovement((0, 0.1, 0), True)
         if keypress == "a":
@@ -153,6 +154,9 @@ class Networking:
         if keypress == self.stoptrap:
             playerobject.applyMovement((0, 0, 0), True)
 
+    def spawnobject(self):
+        # needs a "player"dict containing name, type, spawnlocation, and if type=minion, a goal.
+        pass
 
     def detectmovement(self):
         keyb = logic.keyboard
@@ -176,32 +180,42 @@ class Networking:
             self.sender({"keypress": "d", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
         else:
-            if not self.stoptrap: # if not stoptrap, send. else(just used it), don't send.
+            if not self.stoptrap:  # if not stoptrap, send. else(just used it), don't send.
                 # print sending stoptrap
                 self.sender({"keypress": self.stop, "role": self.role})
                 self.stoptrap = True
         sleep(0.0001)
 
-    def sender(self, message):
-        message["role"] = self.role
-        if message != self.lastsent:
-            print("Trying to send", message)
-            try:
-                if self.roomset: # to switch to the second socket
-                    self.s2.send(bytes(json.dumps(message), "utf-8"))
-                elif not self.roomset:
-                    self.s.send(bytes(json.dumps(message), "utf-8"))
-                #print(self.s)
-                print("sent message")
-            except Exception as e:
-                traceback.print_exc()
-            except KeyboardInterrupt:
-                #self.s.close()
-                pass
-            #self.lastsent = message
+    def sender(self, message, role=""):
+        print(message)
+        if role != "":
+            message["role"] = role
+        else:
+            message["role"] = self.role
+
+
+        print("Trying to send", message)
+        print(self.roomset)
+        try:
+            if self.roomset: # to switch to the second socket
+                self.s2.send(bytes(json.dumps(message), "utf-8"))
+                print(self.s2)
+            elif not self.roomset:
+                self.s.send(bytes(json.dumps(message), "utf-8"))
+                print(self.s)
+
+            print(self.s)
+
+            print("sent message")
+        except Exception as e:
+            traceback.print_exc()
+        except KeyboardInterrupt:
+            #self.s.close()
+            pass
 
 networking = Networking()
 
 
 def main():
     networking.detectmovement()
+
