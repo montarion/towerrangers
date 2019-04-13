@@ -19,19 +19,21 @@ class Networking:
         self.role = "unknown"
         self.playerdicts = []
         self.roomset = False
+        self.enemyspawned = False
+        self.stop = "µ"
+        self.stoptrap = False # if true, don't send.
         self.scene = GameLogic.getCurrentScene()
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.ipaddr = "localhost"
+        self.ipaddr = "192.168.178.31"
         self.s.connect((self.ipaddr, 5555))
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
         # get self object
         self.obj = self.scene.objects["Cube"]
-        print(self.scene.objects)
 
 
 
@@ -59,42 +61,43 @@ class Networking:
 
     def process(self, data):
         try:
+            # filter bad dicts
+            if "}{" in data:
+                data = data.split("}{")[0] + "}"
+                print("HAD TO FILTER")
             data = json.loads(data)
             keylist = list(data.keys())
-            print("keylist" + str(keylist))
             for key in keylist:
                 if key == "role":
-                    self.role = data[key]
+                    # hardcoding for test HARDCODED
+                    #self.role = data[key]
+                    self.role = "defender"
                     print("ROLE IS: " + self.role)
                     # link role to self
                     self.obj["role"] = self.role
-                    print(self.obj["role"])
 
                     self.sender({"cmd": "search"})
                 if key == "player": # get player dict
                     self.playerdicts.append(data[key])
-                if key == "move":
-                    name = data[key][0]
-                    keypress = data[key][1] # list looks like [str(name), str(keypress)]
-                    #self.move(keypress, )
+                #if key == "move":
+                #    name = data[key][0]
+                #    keypress = data[key][1] # list looks like [str(name), str(keypress)]
+                #    #self.move(keypress, )
                 if key == "room":
-                    print("room")
+                    #print("room")
                     portnumber = data[key]
-                    print("closing old socket!")
-                    print(self.s)
-                    #self.s.close()
+                    #print("closing old socket!")
 
-                    #sleep(1)
                     # totally different socket to avoid mixups
                     self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    print("Created new socket!")
+                    #print("Created new socket!")
                     self.s2.connect((self.ipaddr, portnumber))
                     print("connected to room")
-                    print(type(self.s2))
+                    #print(self.s2)
                     self.roomset = True # socket switch
                     # room init
-                    message = {"roominit": self.role}
+                    message = {"roominit": self.role} # this is the playerobject for the server, so add name, role, whatevs. can be in it's own dict.(if so, change server)
                     try:
                         self.sender(message)
                     except Exception:
@@ -104,11 +107,20 @@ class Networking:
                 if key == "spawn":
                     print("got spawn request")
                     playerdict = data[key]
-                    print(playerdict)
-                    self.scene.addObject("testplayer")
+                    #print(playerdict) # {"attacker":{"name":"testplayer", "role":"attacker"}}
+                    role = playerdict["attacker"]["role"] # again, hardcoded.
+                    name = playerdict[role]["name"]
+                    if not self.enemyspawned:
+                        self.scene.addObject("testplayer") # will be role/type in the future
+                        enemyobj = self.scene.objects["testplayer"]
+                        enemyobj["name"] = name
+                        enemyobj["role"] = role
+                        self.enemyspawned = True
+
                 if key == "move":
                     print("got move request")
                     playerrole = data[key][0]
+                    print("looking for" + playerrole)
                     directionkey = data[key][1]
                     obj = self.getobjectbyid(playerrole)
                     self.move(directionkey, obj)
@@ -123,14 +135,13 @@ class Networking:
         for object in self.scene.objects:
 
             try:
-                print(object)
-                print(object["role"])
                 if object["role"] == id:
                    return object
             except:
                 pass
 
     def move(self, keypress, playerobject):
+        # SPEEDS NEED TO BE TIMES 2 IF IT'S NOT YOURSELF. network crap I guess..
         if keypress == "w":
             playerobject.applyMovement((0, 0.1, 0), True)
         if keypress == "a":
@@ -139,6 +150,8 @@ class Networking:
             playerobject.applyMovement((0, -0.1, 0), True)
         if keypress == "d":
             playerobject.applyMovement((0.1, 0, 0), True)
+        if keypress == self.stoptrap:
+            playerobject.applyMovement((0, 0, 0), True)
 
 
     def detectmovement(self):
@@ -150,14 +163,23 @@ class Networking:
         if wkey:
             #          print("Sending w")
             self.sender({"keypress": "w", "role": self.role})
+            self.stoptrap = False # now stop is allowed to be sent.
         if akey:
             #            print("Sending a")
             self.sender({"keypress": "a", "role": self.role})
+            self.stoptrap = False  # now stop is allowed to be sent.
         if skey:
             self.sender({"keypress": "s", "role": self.role})
+            self.stoptrap = False  # now stop is allowed to be sent.
         if dkey:
             # print("Sending d")
             self.sender({"keypress": "d", "role": self.role})
+            self.stoptrap = False  # now stop is allowed to be sent.
+        else:
+            if not self.stoptrap: # if not stoptrap, send. else(just used it), don't send.
+                # print sending stoptrap
+                self.sender({"keypress": self.stop, "role": self.role})
+                self.stoptrap = True
         sleep(0.0001)
 
     def sender(self, message):
