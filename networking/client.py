@@ -17,6 +17,7 @@ class Networking:
         print("Initializing network..")
         self.lastsent = ""
         self.role = "unknown"
+        self.enemyrole = "unknown"
         self.playerdicts = []
         self.roomset = False
         self.enemyspawned = False
@@ -75,6 +76,11 @@ class Networking:
                     print("ROLE IS: " + self.role)
                     # link role to self
                     self.obj["role"] = self.role
+                    # declare enemy role
+                    if self.role == "attacker":
+                        self.enemyrole = "defender"
+                    else:
+                        self.enemyrole = "attacker"
 
                     self.sender({"cmd": "search"})
                 if key == "player": # get player dict
@@ -107,8 +113,9 @@ class Networking:
                 if key == "spawn":
                     print("got spawn request")
                     playerdict = data[key]
+
                     #print(playerdict) # {"attacker":{"name":"testplayer", "role":"attacker"}}
-                    role = playerdict["attacker"]["role"] # again, hardcoded.
+                    role = playerdict[self.enemyrole]["role"] # again, hardcoded.
                     name = playerdict[role]["name"]
                     if not self.enemyspawned:
                         self.scene.addObject("testplayer") # will be role/type in the future

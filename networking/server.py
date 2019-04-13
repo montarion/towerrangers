@@ -10,7 +10,7 @@ class Server:
         self.connectiondict = {}
         self.tempdict = {}
         self.roledict = {}
-        self.rolelist = ["attacker", "defender"]
+
         self.role = "empty"
         self.roomconndict = {}
 
@@ -27,6 +27,7 @@ class Server:
 
     def assign(self, conn):
         #print(len(self.roledict))
+        self.rolelist = ["attacker", "defender"]
         if len(self.roledict) != 1:
             # no one in it yet
             #print("first to get assigned")
