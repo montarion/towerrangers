@@ -118,7 +118,8 @@ class Networking:
                         print(playerdict)
                         role = playerdict["role"] # again, hardcoded.
                         name = playerdict["name"]
-                        if not self.enemyspawned:
+                        if not self.enemyspawned and role != self.role:
+                            print("Adding object!! \n\n---------\n\n")
                             self.scene.addObject("testplayer") # will be role/type in the future
                             enemyobj = self.scene.objects["testplayer"]
                             enemyobj["name"] = name
@@ -137,7 +138,10 @@ class Networking:
                     print("looking for" + playerrole)
                     directionkey = data[key][1]
                     obj = self.getobjectbyid(playerrole) # role is used as id here
-                    self.move(directionkey, obj)
+                    if obj != None:
+                        self.move(directionkey, obj)
+                    else:
+                        print("couldn't find object. here is the list")
         except Exception:
             print("Processing error!")
             print(data)
@@ -146,7 +150,7 @@ class Networking:
 
     def getobjectbyid(self, id):
         print("getting id")
-        for object in self.scene.objectsInactive: # changed from objects to objectsInactive in a bid to increase performance
+        for object in self.scene.objects: # changed from objects to objectsInactive in a bid to increase performance
 
             try:
                 if object["role"] == id:
