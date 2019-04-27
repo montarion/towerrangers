@@ -239,7 +239,8 @@ class Server:
                                 roomfull = True
 
                             # spawn other units already there
-                            playerobject[data["role"]] = {"name": "testplayer", "role": data["role"]}
+                            # will always be player, other things get spawned with spawn
+                            playerobject[data["role"]] = {"player":{"name": "testplayer", "role": data["role"]}}
                             msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
                             for player in roomconndict:  # {"attacker": <socket>}
                                 print("sent to {}".format(player))
@@ -247,6 +248,11 @@ class Server:
                             processing = False
                             # processing = True
 
+                        if key == "spawn":
+                            spawndict = data[key]  # {"spawn":{"player":{"name":"testplayer", "role":"attacker"}}}
+                            msg = {"spawn": spawndict}
+                            for player in roomconndict:
+                                self.sender(roomconndict[player], msg)
                         if key == "keypress":
                             directionkey = data[key]
 
@@ -260,50 +266,6 @@ class Server:
 
 
 
-    def roomprocessing(self, roomnumber, conn):
 
-        self.roomconndict[roomnumber] = {}
-        playerobject = {}
-
-        while True:
-            print("\n\n------------ROOMPROCESSING------------------\n\n")
-            print("waiting for keypresses")
-
-
-            data = str(conn.recv(1024))[2:-1]
-            print("\n\n{}\n\n".format(data))
-            if "}{" in data:
-                data = data.split("}{")[0] + "}"
-                print("HAD TO FILTER")
-            data = json.loads(data)
-            print("\n\n{}\n\n".format(data))
-            keylist = list(data.keys())
-            print(keylist)
-            for key in keylist:
-                if key == "roominit":
-                    print("ROOMINIT: {}".format(data[key]))
-                    if not data["role"] in self.roomconndict[roomnumber]:
-                        #TODO fix values not getting into roomconndict properly(they overwrite eachother now)
-                        self.roomconndict[roomnumber][data["role"]] = conn
-                    print(self.roomconndict)
-                    # spawn other units already there
-                    playerobject[data["role"]] = {"name": "testplayer", "role": data["role"]}
-                    msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
-                    for player in self.roomconndict[roomnumber]:  # {"attacker": <socket>}
-                        print("sent to {}".format(player))
-                        self.sender(self.roomconndict[roomnumber][player], msg)
-                    processing = False
-                    # processing = True
-
-                if key == "keypress":
-                    directionkey = data[key]
-                    print(directionkey)
-                    msg = {"move": [data["role"], directionkey]}
-
-                    for player in self.roomconndict[roomnumber]:  # {"attacker": <socket>}
-                        self.sender(self.roomconndict[roomnumber][player], msg)
-                    # keypress stuff, send to everyone and such
-
-            # processing = False
 Server().listen()
 
