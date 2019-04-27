@@ -109,13 +109,15 @@ class Networking:
                 if key == "spawn": # this needs to be expanded for multiple types.
                     print("got spawn request")
                     spawndict = data[key] # {"spawn":{"player":{"name":"testplayer", "role":"attacker"}}}
-                    stype = spawndict.keys()[0] # player/minion/tower
+                    stype = list(spawndict.keys())[0] # player/minion/tower
+                    print(stype)
 
-                    #print(playerdict) # {"attacker":{"name":"testplayer", "role":"attacker"}}
+                    #print(playerdict) # {'player': {'name': 'testplayer', 'role': 'attacker'}}
                     if stype == "player":
                         playerdict = spawndict[stype]
-                        role = playerdict[self.enemyrole]["role"] # again, hardcoded.
-                        name = playerdict[role]["name"]
+                        print(playerdict)
+                        role = playerdict["role"] # again, hardcoded.
+                        name = playerdict["name"]
                         if not self.enemyspawned:
                             self.scene.addObject("testplayer") # will be role/type in the future
                             enemyobj = self.scene.objects["testplayer"]
@@ -211,12 +213,12 @@ class Networking:
         try:
             if self.roomset: # to switch to the second socket
                 self.s2.send(bytes(json.dumps(message), "utf-8"))
-                print(self.s2)
+                #print(self.s2)
             elif not self.roomset:
                 self.s.send(bytes(json.dumps(message), "utf-8"))
-                print(self.s)
+                #print(self.s)
 
-            print(self.s)
+            #print(self.s)
 
             print("sent message")
         except Exception as e:
