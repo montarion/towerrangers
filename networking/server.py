@@ -240,7 +240,9 @@ class Server:
 
                             # spawn other units already there
                             # will always be player, other things get spawned with spawn
-                            playerobject[data["role"]] = {"player":{"name": "testplayer", "role": data["role"]}}
+                            objtype = "player"
+                            playerobject[objtype] = {"name": "testplayer", "role": data["role"]}
+                            print(playerobject)
                             msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
                             for player in roomconndict:  # {"attacker": <socket>}
                                 print("sent to {}".format(player))
