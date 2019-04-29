@@ -28,13 +28,13 @@ class Networking:
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.ipaddr = "192.168.178.31"
+        self.ipaddr = "192.168.2.25"
         self.s.connect((self.ipaddr, 5555))
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
         # get self object
-        self.obj = self.scene.objects["Cube"]
+        
 
 
 
@@ -72,10 +72,21 @@ class Networking:
                 if key == "role":
                     # hardcoding for test HARDCODED
                     self.role = data[key]
-
+                    #self.playobj = self.scene.objects["Player"]
                     print("ROLE IS: " + self.role)
                     # link role to self
-                    self.obj["role"] = self.role
+                    
+                    
+                    if self.role ==  "defender":
+                        print("adding defender")
+                        self.scene.addObject("defenderPlayer", "defspawn")
+                        self.playobj = self.scene.objects["defenderPlayer"]
+                    if self.role ==  "attacker":
+                        print("adding attacker")
+                        self.scene.addObject("attackerCamera", "attspawn")
+                        self.scene.active_camera = self.scene.objects["attackerCamera"]
+                        self.playobj = self.scene.objects["attackerCamera"]
+                    self.playobj["role"] = self.role 
                     # declare enemy role
                     if self.role == "attacker":
                         self.enemyrole = "defender"
@@ -100,8 +111,8 @@ class Networking:
                     #print(self.s2)
                     self.roomset = True # socket switch
                     # room init
-                    roominitdict = {"role": self.role}
-                    message = {"roominit": self.role} # this is the playerobject for the server, so add name, role, whatevs. can be in it's own dict.(if so, change server)
+                    roominitdict = {"role": self.role, "name": "{}Player".format(self.role)}
+                    message = {"roominit": roominitdict} # this is the playerobject for the server, so add name, role, whatevs. can be in it's own dict.(if so, change server)
                     try:
                         self.sender(message)
                     except Exception:
@@ -110,29 +121,41 @@ class Networking:
                 if key == "spawn": # this needs to be expanded for multiple types. DONE!
                     print("got spawn request")
                     print(data)
-                    spawndict = data[key] # {"spawn":{"player":{"name":"testplayer", "role":"attacker"}}}
-                    stype = list(spawndict.keys())[0] # player/minion/tower
-                    print(stype)
+                    spawndict = data[key] # {"spawn":{"attacker":{"name":"testplayer", "role":"attacker"}}}
+                    print(len(spawndict))
+                    stypes = list(spawndict.keys())# player/minion/tower
+                    for stype in stypes:
+                        print(stype)
 
-                    #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
-                    if stype == "player":
-                        playerdict = spawndict[stype]
-                        playerdict = playerdict[self.enemyrole]
-                        print(playerdict)
-                        role = playerdict["role"]
-                        name = playerdict["name"]
-                        if not self.enemyspawned and role != self.role:
-                            print("Adding object!! \n\n---------\n\n")
-                            self.scene.addObject("testplayer") # will be role/type in the future
-                            enemyobj = self.scene.objects["testplayer"]
-                            enemyobj["name"] = name
-                            enemyobj["role"] = role
-                            self.enemyspawned = True
-                    if stype == "minion":
-                        miniondict = spawndict[stype]
-                        location = miniondict["spawnpoint"] # e.g. "5"
-                        miniontype = miniondict["miniontype"]
-                        self.scene.addObject(miniontype, location)
+
+                        #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
+                        if stype == "attacker" or stype == "defender":
+                            playerdict = spawndict[stype]
+                            print("spawndict: " + str(playerdict))
+
+                            print(self.role)
+                            try:
+                                #playerdict = playerdict[self.enemyrole]
+                                print(playerdict)
+                                role = playerdict["role"]
+                                print("self is:" + self.role)
+                                name = playerdict["name"]
+                                print(self.enemyspawned)
+                                print(role != self.role)
+                                if not self.enemyspawned and role != self.role:
+                                    print("Adding object!! \n\n---------\n\n")
+                                    self.scene.addObject(name) # will be role/type in the future
+                                    enemyobj = self.scene.objects[name]
+                                    enemyobj["name"] = name
+                                    enemyobj["role"] = role
+                                    self.enemyspawned = True
+                            except Exception:
+                                traceback.print_exc()
+                        if stype == "minion":
+                            miniondict = spawndict[stype]
+                            location = miniondict["spawnpoint"] # e.g. "5"
+                            miniontype = miniondict["miniontype"]
+                            self.scene.addObject(miniontype, location)
 
 
                 if key == "move":

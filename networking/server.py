@@ -231,18 +231,20 @@ class Server:
                     #print(keylist)
                     for key in keylist:
                         if key == "roominit":
-                            #print("ROOMINIT: {}".format(data[key]))
+                            print("ROOMINIT: {}".format(data[key]))
                             if not data[key]["role"] in roomconndict:
-                                print("ADDING {} TO ROOMCONNDICT".format(data["role"]))
+                                print("ADDING {} TO ROOMCONNDICT".format(data[key]["role"]))
                                 roomconndict[data[key]["role"]] = conn
                             if len(roomconndict) == 2:
                                 roomfull = True
-
+                            partialdict = data[key]
                             # spawn other units already there
                             # will always be player, other things get spawned with spawn
                             print("spawning old units")
                             objtype = "player"
-                            playerobject[objtype] = {data["role"]:{"name": "testplayer", "role": data["role"]}}
+                            name = partialdict["name"]
+                            print("got {} as name".format(name))
+                            playerobject[data["role"]] = {"name": name, "role": data["role"]}
                             print(playerobject) # {"player":{"attacker":{name, role}}}
                             msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
                             for player in roomconndict:  # {"attacker": <socket>}
@@ -252,7 +254,7 @@ class Server:
                             # processing = True
 
                         if key == "spawn":
-                            spawndict = data[key]  # {"spawn":{"player":{"name":"testplayer", "role":"attacker"}}}
+                            spawndict = data[key]  # {"spawn":{"player":{"name":"DefenderPlayer.001", "role":"attacker"}}}
                             msg = {"spawn": spawndict}
                             for player in roomconndict:
                                 self.sender(roomconndict[player], msg)
