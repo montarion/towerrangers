@@ -231,10 +231,10 @@ class Server:
                     #print(keylist)
                     for key in keylist:
                         if key == "roominit":
-                            #print("ROOMINIT: {}".format(data[key]))
-                            if not data[key]["role"] in roomconndict:
+                            print("ROOMINIT: {}".format(data[key]))
+                            if not data[key] in roomconndict:
                                 print("ADDING {} TO ROOMCONNDICT".format(data["role"]))
-                                roomconndict[data[key]["role"]] = conn
+                                roomconndict[data[key]] = conn
                             if len(roomconndict) == 2:
                                 roomfull = True
 
@@ -242,7 +242,7 @@ class Server:
                             # will always be player, other things get spawned with spawn
                             print("spawning old units")
                             objtype = "player"
-                            playerobject[objtype] = {data["role"]:{"name": "testplayer", "role": data["role"]}}
+                            playerobject[data["role"]] = {"name": "testplayer", "role": data["role"]}
                             print(playerobject) # {"player":{"attacker":{name, role}}}
                             msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
                             for player in roomconndict:  # {"attacker": <socket>}

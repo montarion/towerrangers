@@ -110,12 +110,12 @@ class Networking:
                 if key == "spawn": # this needs to be expanded for multiple types. DONE!
                     print("got spawn request")
                     print(data)
-                    spawndict = data[key] # {"spawn":{"player":{"name":"testplayer", "role":"attacker"}}}
+                    spawndict = data[key] # {"spawn":{"attacker":{"name":"testplayer", "role":"attacker"}}}
                     stype = list(spawndict.keys())[0] # player/minion/tower
                     print(stype)
 
                     #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
-                    if stype == "player":
+                    if stype == "attacker" or stype == "defender":
                         playerdict = spawndict[stype]
                         playerdict = playerdict[self.enemyrole]
                         print(playerdict)
