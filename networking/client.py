@@ -120,16 +120,17 @@ class Networking:
                         #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
                         if stype == "attacker" or stype == "defender":
                             playerdict = spawndict[stype]
-                            print(playerdict)
-                            print("self is:" + self.enemyrole)
+                            print("spawndict: " + str(playerdict))
+
                             print(self.role)
                             try:
-                                playerdict = playerdict[self.enemyrole]
+                                #playerdict = playerdict[self.enemyrole]
                                 print(playerdict)
                                 role = playerdict["role"]
+                                print("self is:" + self.role)
                                 name = playerdict["name"]
                                 print(self.enemyspawned)
-                                print(role == self.enemyrole)
+                                print(role != self.role)
                                 if not self.enemyspawned and role != self.role:
                                     print("Adding object!! \n\n---------\n\n")
                                     self.scene.addObject("testplayer") # will be role/type in the future
