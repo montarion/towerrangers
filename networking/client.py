@@ -72,10 +72,20 @@ class Networking:
                 if key == "role":
                     # hardcoding for test HARDCODED
                     self.role = data[key]
-                    self.playobj = self.scene.objects["Player"]
+                    #self.playobj = self.scene.objects["Player"]
                     print("ROLE IS: " + self.role)
                     # link role to self
-                    self.playobj["role"] = self.role
+                    
+                    
+                    if self.role ==  "defender":
+                        print("adding defender")
+                        self.scene.addObject("defenderPlayer", "defspawn")
+                        self.playobj = self.scene.objects["defenderPlayer"]
+                    if self.role ==  "attacker":
+                        print("adding attacker")
+                        self.scene.addObject("attackerPlayer", "attspawn")
+                        self.playobj = self.scene.objects["attackerPlayer"]
+                    self.playobj["role"] = self.role 
                     # declare enemy role
                     if self.role == "attacker":
                         self.enemyrole = "defender"
