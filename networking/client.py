@@ -111,28 +111,39 @@ class Networking:
                     print("got spawn request")
                     print(data)
                     spawndict = data[key] # {"spawn":{"attacker":{"name":"testplayer", "role":"attacker"}}}
-                    stype = list(spawndict.keys())[0] # player/minion/tower
-                    print(stype)
+                    print(len(spawndict))
+                    stypes = list(spawndict.keys())# player/minion/tower
+                    for stype in stypes:
+                        print(stype)
 
-                    #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
-                    if stype == "attacker" or stype == "defender":
-                        playerdict = spawndict[stype]
-                        playerdict = playerdict[self.enemyrole]
-                        print(playerdict)
-                        role = playerdict["role"]
-                        name = playerdict["name"]
-                        if not self.enemyspawned and role != self.role:
-                            print("Adding object!! \n\n---------\n\n")
-                            self.scene.addObject("testplayer") # will be role/type in the future
-                            enemyobj = self.scene.objects["testplayer"]
-                            enemyobj["name"] = name
-                            enemyobj["role"] = role
-                            self.enemyspawned = True
-                    if stype == "minion":
-                        miniondict = spawndict[stype]
-                        location = miniondict["spawnpoint"] # e.g. "5"
-                        miniontype = miniondict["miniontype"]
-                        self.scene.addObject(miniontype, location)
+
+                        #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
+                        if stype == "attacker" or stype == "defender":
+                            playerdict = spawndict[stype]
+                            print(playerdict)
+                            print("self is:" + self.enemyrole)
+                            print(self.role)
+                            try:
+                                playerdict = playerdict[self.enemyrole]
+                                print(playerdict)
+                                role = playerdict["role"]
+                                name = playerdict["name"]
+                                print(self.enemyspawned)
+                                print(role == self.enemyrole)
+                                if not self.enemyspawned and role != self.role:
+                                    print("Adding object!! \n\n---------\n\n")
+                                    self.scene.addObject("testplayer") # will be role/type in the future
+                                    enemyobj = self.scene.objects["testplayer"]
+                                    enemyobj["name"] = name
+                                    enemyobj["role"] = role
+                                    self.enemyspawned = True
+                            except Exception:
+                                traceback.print_exc()
+                        if stype == "minion":
+                            miniondict = spawndict[stype]
+                            location = miniondict["spawnpoint"] # e.g. "5"
+                            miniontype = miniondict["miniontype"]
+                            self.scene.addObject(miniontype, location)
 
 
                 if key == "move":
