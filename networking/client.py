@@ -29,12 +29,13 @@ class Networking:
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.ipaddr = "192.168.178.31"
+        self.s.settimeout(5)
         self.s.connect((self.ipaddr, 5555))
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
         # get self object
-        self.obj = self.scene.objects["Cube"]
+
 
 
 
@@ -70,12 +71,12 @@ class Networking:
             keylist = list(data.keys())
             for key in keylist:
                 if key == "role":
-                    # hardcoding for test HARDCODED
+                    self.playobj = self.scene.objects["Cube"]
                     self.role = data[key]
 
                     print("ROLE IS: " + self.role)
                     # link role to self
-                    self.obj["role"] = self.role
+                    self.playobj["role"] = self.role
                     # declare enemy role
                     if self.role == "attacker":
                         self.enemyrole = "defender"
@@ -83,6 +84,7 @@ class Networking:
                         self.enemyrole = "attacker"
 
                     self.sender({"cmd": "search"})
+
                 if key == "player": # get player dict
                     self.playerdicts.append(data[key])
 
@@ -133,7 +135,7 @@ class Networking:
                                 print(role != self.role)
                                 if not self.enemyspawned and role != self.role:
                                     print("Adding object!! \n\n---------\n\n")
-                                    self.scene.addObject("testplayer") # will be role/type in the future
+                                    self.scene.addObject("testplayer") # you can add a location (with findbyobject) # will be role/type in the future
                                     enemyobj = self.scene.objects["testplayer"]
                                     enemyobj["name"] = name
                                     enemyobj["role"] = role
