@@ -232,17 +232,18 @@ class Server:
                     for key in keylist:
                         if key == "roominit":
                             #print("ROOMINIT: {}".format(data[key]))
-                            if not data["role"] in roomconndict:
+                            if not data[key]["role"] in roomconndict:
                                 print("ADDING {} TO ROOMCONNDICT".format(data["role"]))
-                                roomconndict[data["role"]] = conn
+                                roomconndict[data[key]["role"]] = conn
                             if len(roomconndict) == 2:
                                 roomfull = True
 
                             # spawn other units already there
                             # will always be player, other things get spawned with spawn
+                            print("spawning old units")
                             objtype = "player"
-                            playerobject[objtype] = {"name": "testplayer", "role": data["role"]}
-                            print(playerobject)
+                            playerobject[objtype] = {data["role"]:{"name": "testplayer", "role": data["role"]}}
+                            print(playerobject) # {"player":{"attacker":{name, role}}}
                             msg = {"spawn": playerobject}  # {"spawn": {playerobject}}
                             for player in roomconndict:  # {"attacker": <socket>}
                                 print("sent to {}".format(player))

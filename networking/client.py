@@ -100,23 +100,26 @@ class Networking:
                     #print(self.s2)
                     self.roomset = True # socket switch
                     # room init
+                    roominitdict = {"role": self.role}
                     message = {"roominit": self.role} # this is the playerobject for the server, so add name, role, whatevs. can be in it's own dict.(if so, change server)
                     try:
                         self.sender(message)
                     except Exception:
                         traceback.print_exc()
 
-                if key == "spawn": # this needs to be expanded for multiple types.
+                if key == "spawn": # this needs to be expanded for multiple types. DONE!
                     print("got spawn request")
+                    print(data)
                     spawndict = data[key] # {"spawn":{"player":{"name":"testplayer", "role":"attacker"}}}
                     stype = list(spawndict.keys())[0] # player/minion/tower
                     print(stype)
 
-                    #print(playerdict) # {'player': {'name': 'testplayer', 'role': 'attacker'}}
+                    #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
                     if stype == "player":
                         playerdict = spawndict[stype]
+                        playerdict = playerdict[self.enemyrole]
                         print(playerdict)
-                        role = playerdict["role"] # again, hardcoded.
+                        role = playerdict["role"]
                         name = playerdict["name"]
                         if not self.enemyspawned and role != self.role:
                             print("Adding object!! \n\n---------\n\n")
