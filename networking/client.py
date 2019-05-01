@@ -4,8 +4,13 @@ import socket, json, threading, sys, GameLogic, traceback
 
 
 from bge import logic, events
+<<<<<<< HEAD
 import HASH.py
 
+=======
+
+# need to push 1 #
+>>>>>>> e159e1a166d8e1b2ebaf5e0d57213bc7ec5fc1be
 
 ### THIS IS THE CLIENT ###
 
@@ -44,7 +49,7 @@ class Networking:
         print(self.sender({"cmd": 'nameUser'}))
         threading.Thread(target=self.listener).start()
         # get self object
-        self.obj = self.scene.objects["Cube"]
+        
 
 
 
@@ -82,10 +87,21 @@ class Networking:
                 if key == "role":
                     # hardcoding for test HARDCODED
                     self.role = data[key]
-
+                    #self.playobj = self.scene.objects["Player"]
                     print("ROLE IS: " + self.role)
                     # link role to self
-                    self.obj["role"] = self.role
+                    
+                    
+                    if self.role ==  "defender":
+                        print("adding defender")
+                        self.scene.addObject("defenderPlayer", "defspawn")
+                        self.playobj = self.scene.objects["defenderPlayer"]
+                    if self.role ==  "attacker":
+                        print("adding attacker")
+                        self.scene.addObject("attackerCamera", "attspawn")
+                        self.scene.active_camera = self.scene.objects["attackerCamera"]
+                        self.playobj = self.scene.objects["attackerCamera"]
+                    self.playobj["role"] = self.role 
                     # declare enemy role
                     if self.role == "attacker":
                         self.enemyrole = "defender"
@@ -95,10 +111,7 @@ class Networking:
                     self.sender({"cmd": "search"})
                 if key == "player": # get player dict
                     self.playerdicts.append(data[key])
-                #if key == "move":
-                #    name = data[key][0]
-                #    keypress = data[key][1] # list looks like [str(name), str(keypress)]
-                #    #self.move(keypress, )
+
                 if key == "room":
                     #print("room")
                     portnumber = data[key]
@@ -113,26 +126,52 @@ class Networking:
                     #print(self.s2)
                     self.roomset = True # socket switch
                     # room init
-                    message = {"roominit": self.role} # this is the playerobject for the server, so add name, role, whatevs. can be in it's own dict.(if so, change server)
+                    roominitdict = {"role": self.role, "name": "{}Player".format(self.role)}
+                    message = {"roominit": roominitdict} # this is the playerobject for the server, so add name, role, whatevs. can be in it's own dict.(if so, change server)
                     try:
                         self.sender(message)
                     except Exception:
                         traceback.print_exc()
 
-                    #self.move("w", self.obj)
-                if key == "spawn":
+                if key == "spawn": # this needs to be expanded for multiple types. DONE!
                     print("got spawn request")
-                    playerdict = data[key]
+                    print(data)
+                    spawndict = data[key] # {"spawn":{"attacker":{"name":"testplayer", "role":"attacker"}}}
+                    print(len(spawndict))
+                    stypes = list(spawndict.keys())# player/minion/tower
+                    for stype in stypes:
+                        print(stype)
 
-                    #print(playerdict) # {"attacker":{"name":"testplayer", "role":"attacker"}}
-                    role = playerdict[self.enemyrole]["role"] # again, hardcoded.
-                    name = playerdict[role]["name"]
-                    if not self.enemyspawned:
-                        self.scene.addObject("testplayer") # will be role/type in the future
-                        enemyobj = self.scene.objects["testplayer"]
-                        enemyobj["name"] = name
-                        enemyobj["role"] = role
-                        self.enemyspawned = True
+
+                        #print(playerdict) # {'player': {"attacker": {'name': 'testplayer', 'role': 'attacker'}}
+                        if stype == "attacker" or stype == "defender":
+                            playerdict = spawndict[stype]
+                            print("spawndict: " + str(playerdict))
+
+                            print(self.role)
+                            try:
+                                #playerdict = playerdict[self.enemyrole]
+                                print(playerdict)
+                                role = playerdict["role"]
+                                print("self is:" + self.role)
+                                name = playerdict["name"]
+                                print(self.enemyspawned)
+                                print(role != self.role)
+                                if not self.enemyspawned and role != self.role:
+                                    print("Adding object!! \n\n---------\n\n")
+                                    self.scene.addObject(name) # will be role/type in the future
+                                    enemyobj = self.scene.objects[name]
+                                    enemyobj["name"] = name
+                                    enemyobj["role"] = role
+                                    self.enemyspawned = True
+                            except Exception:
+                                traceback.print_exc()
+                        if stype == "minion":
+                            miniondict = spawndict[stype]
+                            location = miniondict["spawnpoint"] # e.g. "5"
+                            miniontype = miniondict["miniontype"]
+                            self.scene.addObject(miniontype, location)
+
 
                 if key == "move":
                     print("got move request")
@@ -140,7 +179,10 @@ class Networking:
                     print("looking for" + playerrole)
                     directionkey = data[key][1]
                     obj = self.getobjectbyid(playerrole) # role is used as id here
-                    self.move(directionkey, obj)
+                    if obj != None:
+                        self.move(directionkey, obj)
+                    else:
+                        print("couldn't find object. here is the list")
         except Exception:
             print("Processing error!")
             print(data)
@@ -149,7 +191,7 @@ class Networking:
 
     def getobjectbyid(self, id):
         print("getting id")
-        for object in self.scene.objects:
+        for object in self.scene.objects: # changed from objects to objectsInactive in a bid to increase performance
 
             try:
                 if object["role"] == id:
@@ -216,12 +258,12 @@ class Networking:
         try:
             if self.roomset: # to switch to the second socket
                 self.s2.send(bytes(json.dumps(message), "utf-8"))
-                print(self.s2)
+                #print(self.s2)
             elif not self.roomset:
                 self.s.send(bytes(json.dumps(message), "utf-8"))
-                print(self.s)
+                #print(self.s)
 
-            print(self.s)
+            #print(self.s)
 
             print("sent message")
         except Exception as e:
