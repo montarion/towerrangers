@@ -4,7 +4,7 @@ import socket, json, threading, sys, GameLogic, traceback
 
 
 from bge import logic, events
-
+import HASH.py
 
 
 ### THIS IS THE CLIENT ###
@@ -28,10 +28,20 @@ class Networking:
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.ipaddr = "192.168.2.25"
+        
+        hostname = socket.gethostname()    
+        self.ipaddr = socket.gethostbyname(hostname)
         self.s.connect((self.ipaddr, 5555))
+        
+        # hash
+        nameUser = "marco!"
+        hash_object = hashlib.sha256(nameUser.encode('utf-8'))
+        hex_dig = hash_object.hexdigest()
+        
         print("Connected to server")
-        self.sender({"cmd": "marco!"})
+        self.sender({"cmdTEST": nameUser})
+        #self.sender({"cmdTEST": 'marco!'})
+        print(self.sender({"cmd": 'nameUser'}))
         threading.Thread(target=self.listener).start()
         # get self object
         self.obj = self.scene.objects["Cube"]
