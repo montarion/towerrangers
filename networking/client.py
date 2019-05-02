@@ -172,6 +172,14 @@ class Networking:
                         self.move(directionkey, obj)
                     else:
                         print("couldn't find object. here is the list")
+
+                if key == "shooting":
+                    life_time = 120
+                    velocity = 15
+                    arrow = self.scene.objectsInactive["Arrow"]
+                    new_arrow = self.scene.addObject(arrow, self.owner, life_time)
+                    new_arrow.setLinearVelocity((0, velocity, 0, True))
+
         except Exception:
             print("Processing error!")
             print(data)
@@ -208,10 +216,12 @@ class Networking:
 
     def detectmovement(self):
         keyb = logic.keyboard
+        mouse = logic.mouse
         wkey = logic.KX_INPUT_ACTIVE == keyb.events[events.WKEY]
         akey = logic.KX_INPUT_ACTIVE == keyb.events[events.AKEY]
         skey = logic.KX_INPUT_ACTIVE == keyb.events[events.SKEY]
         dkey = logic.KX_INPUT_ACTIVE == keyb.events[events.DKEY]
+        mouseClick = logic. KX_INPUT_JUST_ACTIVATED == mouse.events[events.LEFTMOUSE]
         if wkey:
             #          print("Sending w")
             self.sender({"keypress": "w", "role": self.role})
@@ -227,6 +237,10 @@ class Networking:
             # print("Sending d")
             self.sender({"keypress": "d", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
+        if mouseClick:
+            self.sender({"keypress": "click",  "role": self.role})
+            self.stoptrap = False
+            
         else:
             if not self.stoptrap:  # if not stoptrap, send. else(just used it), don't send.
                 # print sending stoptrap
