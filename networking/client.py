@@ -1,6 +1,6 @@
 ﻿#fixed imports
 from time import sleep
-import socket, json, threading, sys, GameLogic, traceback
+import socket, json, threading, sys, GameLogic, traceback, hashlib
 
 
 from bge import logic, events
