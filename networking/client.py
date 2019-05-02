@@ -1,16 +1,12 @@
 ﻿#fixed imports
 from time import sleep
-import socket, json, threading, sys, GameLogic, traceback
+import socket, json, threading, sys, GameLogic, traceback, hashlib
 
 
 from bge import logic, events
-<<<<<<< HEAD
-import HASH.py
-
-=======
 
 # need to push 1 #
->>>>>>> e159e1a166d8e1b2ebaf5e0d57213bc7ec5fc1be
+
 
 ### THIS IS THE CLIENT ###
 
@@ -33,13 +29,8 @@ class Networking:
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-<<<<<<< HEAD
         self.ipaddr = "192.168.178.31"
-=======
-        
-        hostname = socket.gethostname()    
-        self.ipaddr = socket.gethostbyname(hostname)
->>>>>>> b5e4fb598e7bc7d4522fb4beb4a733e907f43f52
+
         self.s.connect((self.ipaddr, 5555))
         
         # hash
