@@ -100,9 +100,7 @@ class Server:
 
                     # send to room
                     for roomnumber in self.roomdict:
-                        #print("ROOM NUMBER ON LINE 92 IS::: ")
-                        #print(self.roomdict)
-                        #print(roomnumber)
+
                         print("PEOPLE IN ROOM {}: {}".format(roomnumber, self.roomdict[roomnumber][0]))
                         if self.roomdict[roomnumber][0] == 0:
                             print("ADDING FIRST PERSON TO ROOM")
@@ -167,6 +165,8 @@ class Server:
         addr = (host, port)
         roomfull = False
 
+        roomconndict = {}
+
 
         data = ""
         connlist = []
@@ -216,19 +216,19 @@ class Server:
                     for sock in ready_socks:
                         data = str(sock.recv(1024))[2:-1]  # This is will not block
                         print("received message:", data)
-                        self.roomprocessing(data, conn)
+                        self.roomprocessing(data, conn, roomconndict)
                 else:
                     try:
                         data = str(conn.recv(1024))[2:-1]
-                        self.roomprocessing(data, conn)
+                        self.roomprocessing(data, conn, roomconndict)
                     except TimeoutError: # non-fatal error for when nonblocking sockets have no data
                         print("no data...")
 
 
 
-    def roomprocessing(self, data, conn):
+    def roomprocessing(self, data, conn, roomconndict):
         print("PROCESSING")
-        roomconndict = {}
+
         playerobject = {}
 
 
@@ -256,14 +256,12 @@ class Server:
                     keylist = list(data.keys())
                     print(keylist)
                     for key in keylist:
-                        print("roomconndict")
-                        print(roomconndict)
                         if key == "roominit":
                             print("ROOMINIT: {}".format(data[key]))
                             if not data[key]["role"] in roomconndict:
                                 print("ADDING {} TO ROOMCONNDICT".format(data[key]["role"]))
                                 roomconndict[data[key]["role"]] = conn
-                                print(roomconndict)
+
                             if len(roomconndict) == 2:
                                 roomfull = True
                             partialdict = data[key]
