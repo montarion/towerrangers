@@ -175,7 +175,8 @@ class Networking:
                     life_time = 120
                     velocity = 15
                     arrow = self.scene.objectsInactive["Arrow"]
-                    new_arrow = self.scene.addObject(arrow, self.owner, life_time)
+                    defender = self.scene.objects["defenderPlayer"]
+                    new_arrow = self.scene.addObject(arrow, defender, life_time)
                     new_arrow.setLinearVelocity((0, velocity, 0, True))
 
         except Exception:
@@ -235,7 +236,7 @@ class Networking:
             self.sender({"keypress": "d", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
         if mouseClick:
-            self.sender({"keypress": "click", "role": self.role})
+            self.sender({"shooting": "click", "role": self.role})
             self.stoptrap = False
 
         else:
