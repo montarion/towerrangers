@@ -80,6 +80,7 @@ class Networking:
                         print("adding defender")
                         self.scene.addObject("defenderPlayer", "defspawn")
                         self.playobj = self.scene.objects["defenderPlayer"]
+                        self.playobj = self.scene.objects["defenderCamera"]
                     if self.role == "attacker":
                         print("adding attacker")
                         self.scene.addObject("attackerCamera", "attspawn")
