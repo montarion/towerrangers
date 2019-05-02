@@ -297,6 +297,11 @@ class Server:
                                 print("SENDING MSG TO {}".format(player))
                             # keypress stuff, send to everyone and such
 
+                        if key == "shooting":
+                            msg = {"shooting": "shot"}
+                            for player in roomconndict:
+                                self.sender(roomconndict[player], msg)
+
                     # processing = False
             except Exception:
                 traceback.print_exc()
