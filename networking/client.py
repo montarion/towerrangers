@@ -5,7 +5,7 @@ import socket, json, threading, sys, GameLogic, traceback, hashlib
 
 from bge import logic, events
 
-# need to push 1 #
+# need to push 2 #
 
 
 ### THIS IS THE CLIENT ###
