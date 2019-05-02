@@ -298,7 +298,7 @@ class Server:
                             # keypress stuff, send to everyone and such
 
                         if key == "shooting":
-                            msg = {"shooting":}
+                            msg = {"keypress": "click"}
                             for player in roomconndict:
                                 self.sender(roomconndict[player], msg)
 

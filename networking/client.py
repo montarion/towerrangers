@@ -67,6 +67,7 @@ class Networking:
                 print("HAD TO FILTER")
             data = json.loads(data)
             keylist = list(data.keys())
+            print(keylist)
             for key in keylist:
                 if key == "role":
                     # self.playobj = self.scene.objects["Cube"]
@@ -82,6 +83,7 @@ class Networking:
                     if self.role == "attacker":
                         print("adding attacker")
                         self.scene.addObject("attackerCamera", "attspawn")
+                        self.scene.addObject("defenderPlayer", "defspawn")
                         self.scene.active_camera = self.scene.objects["attackerCamera"]
                         self.playobj = self.scene.objects["attackerCamera"]
                     self.playobj["role"] = self.role
