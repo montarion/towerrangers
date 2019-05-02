@@ -7,6 +7,7 @@ from bge import logic, events
 
 # need to push 1 #
 
+
 ### THIS IS THE CLIENT ###
 
 
@@ -29,6 +30,7 @@ class Networking:
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.ipaddr = "192.168.178.31"
+
         self.s.connect((self.ipaddr, 5555))
 
         print("Connected to server")
