@@ -261,7 +261,8 @@ class Networking:
             self.sender({"keypress": "d", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
         if mouseClick:
-            self.sender({"shooting": "click", "role": self.role})
+            if self.role == "defender":
+                self.sender({"shooting": "click", "role": self.role})
             self.stoptrap = False
 
         else:
