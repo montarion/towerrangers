@@ -124,7 +124,7 @@ class Networking:
                 if key == "spawn":  # this needs to be expanded for multiple types. DONE!
                     print("got spawn request")
                     print(data)
-                    spawndict = data[key]  # {"spawn":{"attacker":{"name":"testplayer", "role":"attacker"}}}
+                    spawndict = data[key]  # msg
                     print(len(spawndict))
                     stypes = list(spawndict.keys())  # player/minion/tower
                     for stype in stypes:
@@ -157,8 +157,8 @@ class Networking:
                                 traceback.print_exc()
                         if stype == "minion":
                             miniondict = spawndict[stype]
-                            location = miniondict["spawnpoint"]  # e.g. "5"
-                            miniontype = miniondict["miniontype"]
+                            location = miniondict["location"]  # e.g. "5"
+                            miniontype = miniondict["name"]
                             self.scene.addObject(miniontype, location)
 
                 if key == "move":

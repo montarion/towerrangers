@@ -286,6 +286,7 @@ class Server:
                             msg = {"spawn": spawndict}
                             for player in roomconndict:
                                 self.sender(roomconndict[player], msg)
+
                         if key == "keypress":
                             print("GOT KEYPRESSSSSS")
                             directionkey = data[key]
