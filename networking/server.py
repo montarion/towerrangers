@@ -32,7 +32,7 @@ class Server:
         if len(self.roledict) != 1:
             # no one in it yet
             #print("first to get assigned")
-            self.role = self.rolelist[random.randint(0,1)]
+            self.role = self.rolelist[1]
             print("first role is: " + self.role)
             self.roledict[self.role] = [conn]
             self.connectiondict[self.role] = [conn]
@@ -75,7 +75,7 @@ class Server:
 
     def sender(self, conn, msg):
         try:
-            conn.sendall(bytes(json.dumps(msg), "utf-8"))
+            conn.send(bytes(json.dumps(msg), "utf-8"))
             print("SENT")
         except Exception as e:
             traceback.print_exc()
@@ -242,6 +242,10 @@ class Server:
                         d = "{" + d
                     if d[-1] != "}":
                         d = d + "}"
+                    if str(d).count("{") < str(d).count("}"):
+                        d = "{" + d
+                    elif str(d).count("{") > str(d).count("}"):
+                        d = d + "}"
                     data = d
                     datalist.append(data)
 
@@ -286,6 +290,7 @@ class Server:
                             msg = {"spawn": spawndict}
                             for player in roomconndict:
                                 self.sender(roomconndict[player], msg)
+
                         if key == "keypress":
                             print("GOT KEYPRESSSSSS")
                             directionkey = data[key]
