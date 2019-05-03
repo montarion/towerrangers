@@ -75,7 +75,7 @@ class Server:
 
     def sender(self, conn, msg):
         try:
-            conn.sendall(bytes(json.dumps(msg), "utf-8"))
+            conn.send(bytes(json.dumps(msg), "utf-8"))
             print("SENT")
         except Exception as e:
             traceback.print_exc()
@@ -241,6 +241,10 @@ class Server:
                     if d[0] != "{":
                         d = "{" + d
                     if d[-1] != "}":
+                        d = d + "}"
+                    if str(d).count("{") < str(d).count("}"):
+                        d = "{" + d
+                    elif str(d).count("{") > str(d).count("}"):
                         d = d + "}"
                     data = d
                     datalist.append(data)

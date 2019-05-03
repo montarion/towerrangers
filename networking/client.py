@@ -1,6 +1,6 @@
 # fixed imports
 from time import sleep
-import socket, json, threading, sys, GameLogic, traceback, hashlib
+import socket, json, threading, sys, GameLogic, traceback, hashlib, os
 
 from bge import logic, events
 
@@ -71,6 +71,11 @@ class Networking:
                         d = "{" + d
                     if d[-1] != "}":
                         d = d + "}"
+                    if str(d).count("{") < str(d).count("}"):
+                        d = "{" + d
+                    elif str(d).count("{") > str(d).count("}"):
+                        d = d + "}"
+
                     data = d
                     datalist.append(data)
 
@@ -80,6 +85,7 @@ class Networking:
 
             for data in datalist:
                 data = json.loads(data)
+                print("data is: {}".format(data))
                 keylist = list(data.keys())
                 print(keylist)
                 for key in keylist:
@@ -95,6 +101,8 @@ class Networking:
                             self.scene.addObject("defenderPlayer", "defspawn")
                             self.playobj = self.scene.objects["defenderPlayer"]
                             self.playobj = self.scene.objects["defenderCamera"]
+                            print("switching def cam")
+                            self.scene.active_camera = self.scene.objects["attackerCamera"]
                         if self.role == "attacker":
                             print("adding attacker")
                             self.scene.addObject("attackerCamera", "attspawn")
@@ -139,8 +147,8 @@ class Networking:
                         print("got spawn request")
                         print(data)
                         spawndict = data[key]  # msg
-                        print(len(spawndict))
                         stypes = list(spawndict.keys())  # player/minion/tower
+
                         for stype in stypes:
                             print(stype)
 
@@ -174,6 +182,7 @@ class Networking:
                                 miniondict = spawndict[stype]
                                 location = miniondict["location"]  # e.g. "5"
                                 miniontype = miniondict["name"]
+                                print(miniontype, location)
                                 self.scene.addObject(miniontype, location)
 
                     if key == "move":
