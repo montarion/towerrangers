@@ -1,8 +1,8 @@
-from bge import logic, events
+from bge import logic, events, render
 from client import networking
 
 scene = logic.getCurrentScene()
-
+render.showMouse(True)
 cont = logic.getCurrentController()
 own = cont.owner
 

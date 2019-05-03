@@ -32,7 +32,7 @@ class Server:
         if len(self.roledict) != 1:
             # no one in it yet
             #print("first to get assigned")
-            self.role = self.rolelist[random.randint(0,1)]
+            self.role = self.rolelist[1]
             print("first role is: " + self.role)
             self.roledict[self.role] = [conn]
             self.connectiondict[self.role] = [conn]

@@ -178,7 +178,7 @@ class Networking:
                     arrow = self.scene.objectsInactive["Arrow"]
                     defender = self.scene.objects["defenderPlayer"]
                     new_arrow = self.scene.addObject(arrow, defender, life_time)
-                    new_arrow.setLinearVelocity((0, velocity, 0, True))
+                    new_arrow.setLinearVelocity((0, velocity, 0), True)
 
         except Exception:
             print("Processing error!")
