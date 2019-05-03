@@ -156,6 +156,7 @@ class Networking:
                             except Exception:
                                 traceback.print_exc()
                         if stype == "minion":
+                            print("SPAWNING MINION")
                             miniondict = spawndict[stype]
                             location = miniondict["location"]  # e.g. "5"
                             miniontype = miniondict["name"]
