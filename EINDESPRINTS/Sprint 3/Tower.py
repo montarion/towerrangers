@@ -1,4 +1,5 @@
-stats = {}
+from bge import logic
+
 class Tower:
     #Create the Player object // Dictionary
     
@@ -14,8 +15,10 @@ class Tower:
             "health":100,
             "damage":1,
             "attackSpeed":0.5
-        }
-        print(self.Tower['health'])
+            }
+        print("\n\n\nCreated base stats\n\n\n")
+        print(self.tower)
+        logic.globalDict["Towers"] = self.tower
 
     def setHealth(self, healthToSet):
         healthToSet = 10
@@ -36,3 +39,4 @@ tower = Tower
 
 def main():
     tower.buildTower()
+
