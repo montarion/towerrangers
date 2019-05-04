@@ -1,6 +1,6 @@
 from bge import logic, events, render
 from client import networking
-from Tower import Tower
+from Tower import tower
 
 scene = logic.getCurrentScene()
 render.showMouse(True)
@@ -17,4 +17,6 @@ if mouseClick:
     networking.sender(msg)
     
     # test to hurt base
-    Tower.getTower()
+    print("get tower stats")
+    Tower().getTower()
+    print(Tower().getTower())
