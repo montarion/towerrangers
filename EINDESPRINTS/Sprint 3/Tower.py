@@ -6,7 +6,6 @@ class Tower:
     def __init__(self):        
         pass
 
-
     def buildTower(self):
         self.Tower = {
             "type":"",
