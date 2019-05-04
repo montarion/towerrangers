@@ -18,5 +18,6 @@ if mouseClick:
     
     # test to hurt base
     print("get tower stats")
-    tower.getTower()
+    tower.main()
+    print("waiting")
     print(tower.getTower())

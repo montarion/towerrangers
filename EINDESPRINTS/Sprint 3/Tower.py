@@ -1,3 +1,5 @@
+from bge import logic
+
 class Tower:
     #Create the Player object // Dictionary
     
@@ -15,6 +17,7 @@ class Tower:
             }
         print("\n\n\nCreated base stats\n\n\n")
         print(self.tower)
+        logic.globalDict["Towers"] = self.tower
 
     def setHealth(self, healthToSet):
         healthToSet = 10
