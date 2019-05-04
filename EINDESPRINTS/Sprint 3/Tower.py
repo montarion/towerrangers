@@ -2,7 +2,7 @@ class Tower:
     #Create the Player object // Dictionary
     
     def __init__(self):        
-        pass
+        self.tower = {}
 
 
     def buildTower(self):
@@ -28,7 +28,6 @@ class Tower:
     
     def takeDamage(self):
         print("Takes damage")
-
 
 
 

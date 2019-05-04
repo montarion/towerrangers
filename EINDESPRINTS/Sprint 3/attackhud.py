@@ -1,6 +1,6 @@
 from bge import logic, events, render
 from client import networking
-from Tower import Tower
+from Tower import tower
 
 scene = logic.getCurrentScene()
 render.showMouse(True)
