@@ -8,7 +8,6 @@ class Tower:
 
 
     def buildTower(self):
-        self.Tower = stats
         self.Tower = {
             "type":"",
             "name":"",
@@ -17,8 +16,8 @@ class Tower:
             "attackSpeed":0.5
             }
         print("\n\n\nCreated base stats\n\n\n")
-        print(self.tower)
-        logic.globalDict["Towers"] = self.tower
+        print(self.Tower)
+        logic.globalDict["Towers"] = self.Tower
 
     def setHealth(self, healthToSet):
         healthToSet = 10
@@ -26,6 +25,7 @@ class Tower:
         print(self.Tower)
         
     def getTower(self):
+        print(logic.globalDict["Towers"])
         print(self.Tower)
         
     def setSpeed(self):
@@ -35,7 +35,7 @@ class Tower:
         print("Takes damage")
 
 
-tower = Tower
+tower = Tower()
 
 def main():
     tower.buildTower()
