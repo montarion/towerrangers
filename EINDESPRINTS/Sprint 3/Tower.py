@@ -1,10 +1,10 @@
 from bge import logic
 
-class Towerclass:
+class Tower:
     #Create the Player object // Dictionary
     
     def __init__(self):        
-        pass
+        self.Tower = {}
 
     def buildTower(self):
         self.Tower = {
@@ -25,7 +25,7 @@ class Towerclass:
         
     def getTower(self):
         print(logic.globalDict["Towers"])
-        print(self.Tower)
+        #print(self.Tower)
         
     def setSpeed(self):
         self.Tower["attackSpeed"] = 10        
@@ -34,7 +34,7 @@ class Towerclass:
         print("Takes damage")
 
 
-tower = Towerclass()
+#tower = Tower()
 
 def main():
-    tower.buildTower()
+    Tower().buildTower()
