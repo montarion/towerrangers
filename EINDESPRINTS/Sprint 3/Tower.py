@@ -1,6 +1,6 @@
 from bge import logic
 
-class Tower:
+class Towerclass:
     #Create the Player object // Dictionary
     
     def __init__(self):        
@@ -36,7 +36,7 @@ class Tower:
         print("Takes damage")
 
 
-tower = Tower()
+tower = Towerclass()
 
 def main():
-    Tower().buildTower()
+    tower.buildTower()
