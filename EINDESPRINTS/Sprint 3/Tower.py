@@ -7,13 +7,14 @@ class Tower:
 
     def buildTower(self):
         self.tower = {
-            "type":"",
-            "name":"",
+            "type":"base",
+            "name":"basuru",
             "health":100,
             "damage":1,
             "attackSpeed":0.5
-        }
-        print(self.tower['health'])
+            }
+        print("\n\n\nCreated base stats\n\n\n")
+        print(self.tower)
 
     def setHealth(self, healthToSet):
         healthToSet = 10
@@ -21,7 +22,9 @@ class Tower:
         print(self.tower)
         
     def getTower(self):
+        print("tower stats!")
         print(self.tower)
+        return self.tower
         
     def setSpeed(self):
         self.tower["attackSpeed"] = 10
@@ -30,7 +33,7 @@ class Tower:
         print("Takes damage")
 
 
-
+tower = Tower()
 
 def main():
     Tower().buildTower()
