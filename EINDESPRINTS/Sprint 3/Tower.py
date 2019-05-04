@@ -4,7 +4,7 @@ class Tower:
     #Create the Player object // Dictionary
     
     def __init__(self):        
-        pass
+        self.Tower = {}
 
     def buildTower(self):
         self.Tower = {
@@ -25,7 +25,7 @@ class Tower:
         
     def getTower(self):
         print(logic.globalDict["Towers"])
-        print(self.Tower)
+        #print(self.Tower)
         
     def setSpeed(self):
         self.Tower["attackSpeed"] = 10        
@@ -34,8 +34,8 @@ class Tower:
         print("Takes damage")
 
 
-tower = Tower()
+#tower = Tower()
 
 def main():
-    tower.buildTower()
+    Tower().buildTower()
 
