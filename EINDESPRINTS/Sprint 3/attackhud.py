@@ -17,4 +17,6 @@ if mouseClick:
     networking.sender(msg)
     
     # test to hurt base
-    Tower.getTower()
+    print("get tower stats")
+    Tower().getTower()
+    print(Tower().getTower())
