@@ -29,7 +29,7 @@ class Networking:
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.ipaddr = "192.168.2.120"
+        self.ipaddr = "192.168.178.31"
 
         self.s.connect((self.ipaddr, 5555))
 
@@ -124,13 +124,13 @@ class Networking:
                             print("adding defender")
                             #self.scene.addObject("defenderPlayer", "defspawn")
                             self.playobj = self.scene.objects["defenderPlayer"]
-                            self.playobj = self.scene.objects["defenderCamera"]
+                            #self.playobj = self.scene.objects["defenderCamera"]
                             print("switching def cam")
-                            self.scene.active_camera = self.scene.objects["defenderCamera"]
+                            self.scene.active_camera = self.scene.objects["DefenderCamera"]
                         if self.role == "attacker":
                             print("adding attacker")
                             self.scene.addObject("attackerCamera", "attspawn")
-                            self.scene.addObject("defenderPlayer", "defspawn")
+                            #self.scene.addObject("defenderPlayer", "defspawn")
                             self.scene.active_camera = self.scene.objects["attackerCamera"]
                             self.playobj = self.scene.objects["attackerCamera"]
                         self.playobj["role"] = self.role
