@@ -38,3 +38,4 @@ class Tower:
 
 def main():
     Tower().buildTower()
+

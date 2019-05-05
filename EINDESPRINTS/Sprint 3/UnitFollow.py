@@ -29,6 +29,7 @@ distance = math.sqrt(distanceX * distanceX + distanceY * distanceY)
 # collision stuff
 colsen = controller.sensors["colsen"]
 hit = colsen.hitObject
+
 try:
     arrow = scene.objects["Arrow"]
     if hit == arrow:
@@ -38,6 +39,7 @@ try:
 
 except:
     pass
+
 if distance <= -10 or distance >= 10:
     own.setLinearVelocity(direction * 15, True)
 else:

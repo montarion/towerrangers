@@ -109,7 +109,7 @@ class Networking:
                             #self.scene.addObject("defenderPlayer", "defspawn")
                             self.playobj = self.scene.objects["defenderPlayer"]
                             #self.playobj = self.scene.objects["DefenderCamera"]
-                            print("switching def cam")
+                            #print("switching def cam")
                             self.scene.active_camera = self.scene.objects["DefenderCamera"]
                         if self.role == "attacker":
                             print("adding attacker")
