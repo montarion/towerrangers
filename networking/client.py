@@ -16,6 +16,7 @@ class Networking:
     def __init__(self):
         self.obj = logic.getCurrentController()
         self.owner = self.obj.owner
+        print("New session!\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
         print("Initializing network..")
         self.lastsent = ""
         self.role = "unknown"
@@ -244,14 +245,25 @@ class Networking:
     def move(self, keypress, playerobject):
         # SPEEDS NEED TO BE TIMES 2 IF IT'S NOT YOURSELF. network crap I guess..
         print(playerobject)
+        right = 0.1
+        left = -0.1  # x negative
+        forward = 0.1
+        backward = -0.1  # y negative
+
+        if self.role == "attacker":
+            right = 0.2
+            left = -0.2
+            forward = 0.2
+            backward = -0.2
+
         if keypress == "w":
-            playerobject.applyMovement((0, 0.1, 0), True)
+            playerobject.applyMovement((0, forward, 0), True)
         if keypress == "a":
-            playerobject.applyMovement((-0.1, 0, 0), True)
+            playerobject.applyMovement((left, 0, 0), True)
         if keypress == "s":
-            playerobject.applyMovement((0, -0.1, 0), True)
+            playerobject.applyMovement((0, backward, 0), True)
         if keypress == "d":
-            playerobject.applyMovement((0.1, 0, 0), True)
+            playerobject.applyMovement((right, 0, 0), True)
         if keypress == self.stoptrap:
             playerobject.applyMovement((0, 0, 0), True)
 
