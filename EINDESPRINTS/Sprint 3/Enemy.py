@@ -1,3 +1,5 @@
+from bge import logic
+from savestate import globaldictionary
 class Enemy:
     #Create the Player object // Dictionary
     
@@ -6,9 +8,9 @@ class Enemy:
 
 
     def buildEnemy(self):
-        self.Enemy = {
-            "type":"",
-            "name":"",
+        globaldictionary["EnemyDict"] = {
+            "type":"minion",
+            "name":"centaur",
             "health":100,
             "damage":1,
             "attackSpeed":.5,
@@ -16,21 +18,39 @@ class Enemy:
             "coins":0
         }
         print("CENTAUR")
-        print(self.Enemy['health'])
+        #print(self.Enemy['health'])
+
 
     def setHealth(self, healthToSet):
         healthToSet = 10
         self.Enemy["health"] += healthToSet
-        print(self.Enemy)
+        print(globaldictionary["EnemyDict"])
         
     def getEnemy(self):
-        print(self.Enemy)
+        print(globaldictionary["EnemyDict"])
         
     def setSpeed(self):
         self.Enemy["movementSpeed"] = 10        
     
-    def takeDamage(self):
+    def takeDamage(self, object):
         print("Takes damage")
+        #print(type(self.GD))
+        name = object.name
+        #print(name)
+        print(name == "Arrow")
+        if str(name) == "Arrow":
+            print("hello")
+            globaldictionary["EnemyDict"]["health"] =- 1
+            print("hey")
+            try:
+                print(globaldictionary["EnemyDict"])
+                print("I see you!")
+            except Exception as e:
+                print(e)
+
+            print("there")
+            print("{} has {} health left.".format(globaldictionary["EnemyDict"]["name"], globaldictionary["EnemyDict"]["health"]))
+
 
 
 enemy = Enemy()

@@ -322,6 +322,7 @@ class Server:
                             # keypress stuff, send to everyone and such
 
                         if key == "shooting":
+                            print("\n\n\n got shot request!\n\n\n")
                             msg = {"shooting": "shot"}
                             for player in roomconndict:
                                 self.sender(roomconndict[player], msg)

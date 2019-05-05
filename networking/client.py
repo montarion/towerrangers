@@ -3,6 +3,7 @@ from time import sleep
 import socket, json, threading, sys, GameLogic, traceback, hashlib, os
 
 from bge import logic, events
+from savestate import globaldictionary
 
 
 # need to push 2 #
@@ -31,12 +32,18 @@ class Networking:
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.ipaddr = "192.168.178.31"
 
+        # blender dict stuff
+
+        globaldictionary["enemybuilt"] = False
+
         self.s.connect((self.ipaddr, 5555))
 
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
         # get self object
+        
+
 
 
     def listener(self):
@@ -280,8 +287,8 @@ class Networking:
         else:
             message["role"] = self.role
 
-        print("Trying to send", message)
-        print(self.roomset)
+        #print("Trying to send", message)
+        #print(self.roomset)
         try:
             if self.roomset:  # to switch to the second socket
                 self.s2.send(bytes(json.dumps(message), "utf-8"))
