@@ -18,6 +18,7 @@ class Enemy:
             "coins":0
         }
         print("CENTAUR")
+
         #print(self.Enemy['health'])
 
 
@@ -41,6 +42,7 @@ class Enemy:
         if str(name) == "Arrow":
             print("hello")
             globaldictionary["EnemyDict"]["health"] = globaldictionary["EnemyDict"]["health"] - 1
+
             print("hey")
             try:
                 print(globaldictionary["EnemyDict"])
@@ -50,6 +52,7 @@ class Enemy:
 
             print("there")
             print("{} has {} health left.".format(globaldictionary["EnemyDict"]["name"], globaldictionary["EnemyDict"]["health"]))
+
 
 
 

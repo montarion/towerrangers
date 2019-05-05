@@ -35,6 +35,7 @@ class Networking:
         # blender dict stuff
 
         globaldictionary["enemybuilt"] = False
+        globaldictionary["spawnhidden"] = False
 
         self.s.connect((self.ipaddr, 5555))
 
@@ -111,6 +112,18 @@ class Networking:
                             #self.playobj = self.scene.objects["DefenderCamera"]
                             #print("switching def cam")
                             self.scene.active_camera = self.scene.objects["DefenderCamera"]
+
+                            # hide spawnpoints
+                            print("HIDING SPAWNPOINTS")
+                            if globaldictionary["spawnhidden"] == False:
+                                self.scene.objects["SpawnPointNorth"].visible = 0
+                                self.scene.objects["SpawnPointEast"].visible = 0
+                                self.scene.objects["SpawnPointSouth"].visible = 0
+                                self.scene.objects["SpawnPointWest"].visible = 0
+                                globaldictionary["spawnhidden"] = True
+
+                            self.owner["trackme"] = True
+
                         if self.role == "attacker":
                             print("adding attacker")
                             self.scene.addObject("attackerCamera", "attspawn")
@@ -209,8 +222,8 @@ class Networking:
                         life_time = 120
                         velocity = 15
                         arrow = self.scene.objectsInactive["Arrow"]
-                        defender = self.scene.objects["defenderPlayer"]
-                        new_arrow = self.scene.addObject(arrow, defender, life_time)
+                        arrowspawn = self.scene.objects["ArrowSpawn"]
+                        new_arrow = self.scene.addObject(arrow, arrowspawn, life_time)
                         new_arrow.setLinearVelocity((0, velocity, 0), True)
 
         except Exception:

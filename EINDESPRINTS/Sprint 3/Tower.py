@@ -17,6 +17,9 @@ class Tower:
         print("\n\n\nCreated base stats\n\n\n")
         print(globaldictionary)
 
+        cont = logic.getCurrentController()
+        own = cont.owner
+        own["trackme"] = True
 
     def setHealth(self, healthToSet):
         healthToSet = 10
