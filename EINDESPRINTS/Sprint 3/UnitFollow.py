@@ -25,55 +25,49 @@ for obj in scene.objects:
     except:
         pass
 
-#print(tracklist)
-#print(list(tracklist.keys())[0])
 target = ""
 try:
     closestd = sorted([tracklist[t] for t in tracklist])
     closestobj = [c for c in tracklist if tracklist[c] == closestd[0]][0]
-    #print("Closest object is:")
-    #print(closestobj)
-    #print(type(closestobj))
-    #target = scene.objects[closestobj]
+
     target = closestobj
     #print(type(target))
-    print("TRACKING {} at position {}".format(target.name, target.position))
+    #print("TRACKING {} at position {}".format(target.name, target.position))
 except IndexError:
     print("No objects to track!")
 except Exception as e:
     print(e)
-#distanceX = obj.position.x - own.position.x
-#distanceY = obj.position.y - own.position.y
-#distance = math.sqrt(distanceX * distanceX + distanceY * distanceY)
-
 
 # follow stuff
 direction = target.position - own.position
 direction.normalize()
-
 distanceX = target.position.x - own.position.x
 distanceY = target.position.y - own.position.y
 distance = math.sqrt(distanceX * distanceX + distanceY * distanceY)
-
+try:
+    if distance <= -10 or distance >= 10:
+        own.setLinearVelocity(direction * 15, True)
+    else:
+        own.setLinearVelocity(direction * 0, True)
+except Exception as e:
+    print(e)
 # collision stuff
-print("\n\WAITING FOR COLLISION STUFF")
+
 colsen = controller.sensors["colsen"]
 hit = colsen.hitObject
 
 try:
     arrow = scene.objects["Arrow"]
+    print(hit)
     if hit == arrow:
         print("\n\n\nHIT BY AN ARROW TO THE KNEE\n\n\n")
-        isDead = True
+        #isDead = True
         Enemy().takeDamage(arrow)
 
-except:
-    pass
+except Exception as e:
+    print(e)
 
-if distance <= -10 or distance >= 10:
-    own.setLinearVelocity(direction * 15, True)
-else:
-    own.setLinearVelocity(direction * 0, True)
+
 
 if isDead:
     print("Coin is spawned")

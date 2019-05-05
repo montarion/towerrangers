@@ -33,12 +33,15 @@ class Tower:
     def setSpeed(self):
         globaldictionary["Towers"]["attackSpeed"] = 10
     
-    def takeDamage(self):
+    def takeDamage(self, object):
         print("Takes damage")
+        name = object.name
+
 
 
 #tower = Tower()
 
 def main():
     Tower().buildTower()
+
 
