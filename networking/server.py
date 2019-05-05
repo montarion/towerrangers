@@ -27,19 +27,20 @@ class Server:
 
 
     def assign(self, conn):
+        #TODO: fix assignments je kan geen aanvaller worden???
         #print(len(self.roledict))
         self.rolelist = ["attacker", "defender"]
         if len(self.roledict) != 1:
             # no one in it yet
             #print("first to get assigned")
-            self.role = self.rolelist[0]
+            self.role = self.rolelist[1]
             print("first role is: " + self.role)
             self.roledict[self.role] = [conn]
             self.connectiondict[self.role] = [conn]
             self.rolelist.remove(self.role)
         else:
             print("second to get assigned")
-            self.role = self.rolelist[1]
+            self.role = self.rolelist[0]
             print("second role is: " + self.role)
 
             # clear roles
