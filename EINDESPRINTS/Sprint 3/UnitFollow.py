@@ -24,8 +24,10 @@ distance = math.sqrt(distanceX * distanceX + distanceY * distanceY)
 
 # collision stuff
 colsen = controller.sensors["colsen"]
-hit = colsen.getHitObject()
+hit = colsen.hitObject
 print(hit)
+if hit == "Arrow":
+  isDead = True
 if  distance <= -10 or distance >= 10:    
     #print(distance)
     own.setLinearVelocity(direction * 15, True)
