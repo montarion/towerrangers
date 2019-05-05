@@ -1,9 +1,9 @@
 import socket, random, json, threading, traceback, select
 from time import sleep
 # meed to push
-#TODO: fix spawn stuff(all spawn points react now.) DONE
+
 #TODO: get stats up and running for enemies, towers, and players( en tracking)
-#TODO: Network all the things ( minion spawning done)
+# TODO: make tower arrows their own thing so they can do more damage(see unitfollow.py for example)
 class Server:
     def __init__(self):
         host = "0.0.0.0"

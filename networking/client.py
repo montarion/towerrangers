@@ -297,7 +297,9 @@ class Networking:
         if mouseClick:
             if self.role == "defender":
                 self.sender({"shooting": "click", "role": self.role})
-            self.stoptrap = False
+                self.stoptrap = False
+            if self.role == "attacker":
+                pass
 
         else:
             if not self.stoptrap:  # if not stoptrap, send. else(just used it), don't send.

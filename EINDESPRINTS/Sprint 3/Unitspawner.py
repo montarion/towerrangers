@@ -7,11 +7,17 @@ cont = bge.logic.getCurrentController()
 own = cont.owner
 
 scene = bge.logic.getCurrentScene()
-
-mouse = logic.mouse
-mouseClick = logic.KX_INPUT_JUST_ACTIVATED == mouse.events[events.LEFTMOUSE]
-mhover = cont.sensors["mhover"]
-if mhover.positive:
-    if mouseClick:
-        msg = {"spawn": {"minion": {"location":own.name, "name":"Centaur"}}}
-        networking.sender(msg)
+try:
+    mouse = logic.mouse
+    mouseClick = logic.KX_INPUT_JUST_ACTIVATED == mouse.events[events.LEFTMOUSE]
+    mhover = cont.sensors["mhover"]
+    if mhover.positive:
+        print("STOP HOVERING")
+        if mouseClick:
+            print("Spawnpoint:")
+            print(own.name)
+            print("was clicked!")
+            msg = {"spawn": {"minion": {"location":own.name, "name":"Centaur"}}}
+            networking.sender(msg)
+except Exception as e:
+    print(e)

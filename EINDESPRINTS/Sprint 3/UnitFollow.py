@@ -32,7 +32,7 @@ try:
 
     target = closestobj
     #print(type(target))
-    #print("TRACKING {} at position {}".format(target.name, target.position))
+    print("TRACKING {} at position {}".format(target.name, target.position))
 except IndexError:
     print("No objects to track!")
 except Exception as e:
