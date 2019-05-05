@@ -121,6 +121,7 @@ class Networking:
                         # declare enemy role
                         if self.role == "attacker":
                             self.enemyrole = "defender"
+                            self.scene.objects["defenderPlayer"]["role"] = self.enemyrole
                         else:
                             self.enemyrole = "attacker"
 
@@ -176,8 +177,7 @@ class Networking:
                                     print(role != self.role)
                                     if not self.enemyspawned and role != self.role:
                                         print("Adding object!! \n\n---------\n\n")
-                                        self.scene.addObject(
-                                            name)  # will be role/type in the future # you can add a location (with findbyobject)
+                                        self.scene.addObject(name)  # will be role/type in the future # you can add a location (with findbyobject)
                                         enemyobj = self.scene.objects[name]
 
                                         enemyobj["name"] = name
@@ -196,13 +196,14 @@ class Networking:
                     if key == "move":
                         print("got move request")
                         playerrole = data[key][0]
-                        print("looking for" + playerrole)
+                        print("looking for " + playerrole)
                         directionkey = data[key][1]
                         obj = self.getobjectbyid(playerrole)  # role is used as id here
                         if obj != None:
                             self.move(directionkey, obj)
                         else:
                             print("couldn't find object. here is the list")
+                            print(self.scene.objects)
 
                     if key == "shooting":
                         life_time = 120
