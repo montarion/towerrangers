@@ -10,6 +10,7 @@ controller = bge.logic.getCurrentController()
 own = controller.owner
 Enemy().buildEnemy()
 
+
 # plek voor beslissing nemen
 player = scene.objects['defenderPlayer']
 
@@ -25,15 +26,19 @@ distance = math.sqrt(distanceX * distanceX + distanceY * distanceY)
 # collision stuff
 colsen = controller.sensors["colsen"]
 hit = colsen.hitObject
-print(hit)
-if hit == "Arrow":
-  isDead = True
+
+try:
+    arrow = scene.objects["Arrow"]
+    if hit == arrow:
+      isDead = True
+except:
+    pass
+
 if  distance <= -10 or distance >= 10:    
-    #print(distance)
     own.setLinearVelocity(direction * 15, True)
 else:
     own.setLinearVelocity(direction * 0, True)
-    #isDead = True
+    
     
 if isDead:
     print("Coin is spawned")
