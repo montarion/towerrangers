@@ -15,6 +15,6 @@ if mouseClick:
     #spawn unit
     msg = {"spawn": {"minion":{"name":"Goblin", "location":"SpawnPointWest"}}}
     networking.sender(msg)
-    
+
     # test to hurt base
     tower.getTower()

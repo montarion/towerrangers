@@ -1,5 +1,5 @@
 from bge import logic
-
+from savestate import globaldictionary
 class Tower:
     #Create the Player object // Dictionary
     
@@ -7,7 +7,7 @@ class Tower:
         self.Tower = {}
 
     def buildTower(self):
-        self.Tower = {
+        globaldictionary["Towers"] = {
             "type":"",
             "name":"",
             "health":100,
@@ -15,20 +15,20 @@ class Tower:
             "attackSpeed":0.5
             }
         print("\n\n\nCreated base stats\n\n\n")
-        print(self.Tower)
-        logic.globalDict["Towers"] = self.Tower
+        print(globaldictionary)
+
 
     def setHealth(self, healthToSet):
         healthToSet = 10
-        self.Tower["health"] += healthToSet
-        print(self.Tower)
+        globaldictionary["Towers"]["health"] += healthToSet
+        print(globaldictionary)
         
     def getTower(self):
-        print(logic.globalDict["Towers"])
+        print(globaldictionary["Towers"])
         #print(self.Tower)
         
     def setSpeed(self):
-        self.Tower["attackSpeed"] = 10        
+        globaldictionary["Towers"]["attackSpeed"] = 10
     
     def takeDamage(self):
         print("Takes damage")
@@ -38,3 +38,4 @@ class Tower:
 
 def main():
     Tower().buildTower()
+
