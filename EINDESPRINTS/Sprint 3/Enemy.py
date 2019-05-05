@@ -40,7 +40,7 @@ class Enemy:
         print(name == "Arrow")
         if str(name) == "Arrow":
             print("hello")
-            globaldictionary["EnemyDict"]["health"] =- 1
+            globaldictionary["EnemyDict"]["health"] = globaldictionary["EnemyDict"]["health"] - 1
             print("hey")
             try:
                 print(globaldictionary["EnemyDict"])

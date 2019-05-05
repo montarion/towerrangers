@@ -1,7 +1,9 @@
 import socket, random, json, threading, traceback, select
 from time import sleep
 # meed to push
-
+#TODO: fix spawn stuff(all spawn points react now.) DONE
+#TODO: get stats up and running for enemies, towers, and players( en tracking)
+#TODO: Network all the things ( minion spawning done)
 class Server:
     def __init__(self):
         host = "0.0.0.0"
@@ -27,7 +29,7 @@ class Server:
 
 
     def assign(self, conn):
-        #TODO: fix assignments je kan geen aanvaller worden???
+
         #print(len(self.roledict))
         self.rolelist = ["attacker", "defender"]
         if len(self.roledict) != 1:
