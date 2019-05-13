@@ -3,6 +3,7 @@ from time import sleep
 import socket, json, threading, sys, GameLogic, traceback, hashlib, os
 
 from bge import logic, events
+from savestate import globaldictionary
 
 
 # need to push 2 #
@@ -15,6 +16,7 @@ class Networking:
     def __init__(self):
         self.obj = logic.getCurrentController()
         self.owner = self.obj.owner
+        print("New session!\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
         print("Initializing network..")
         self.lastsent = ""
         self.role = "unknown"
@@ -31,12 +33,20 @@ class Networking:
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.ipaddr = "192.168.2.2"
 
+        # blender dict stuff
+
+        globaldictionary["enemybuilt"] = False
+        globaldictionary["spawnhidden"] = False
+
         self.s.connect((self.ipaddr, 5555))
 
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
         # get self object
+        
+
+
 
     def listener(self):
         print("Started listener")
@@ -98,21 +108,34 @@ class Networking:
 
                         if self.role == "defender":
                             print("adding defender")
-                            self.scene.addObject("defenderPlayer", "defspawn")
+                            #self.scene.addObject("defenderPlayer", "defspawn")
                             self.playobj = self.scene.objects["defenderPlayer"]
-                            self.playobj = self.scene.objects["defenderCamera"]
-                            print("switching def cam")
-                            self.scene.active_camera = self.scene.objects["defenderCamera"]
+                            #self.playobj = self.scene.objects["DefenderCamera"]
+                            #print("switching def cam")
+                            self.scene.active_camera = self.scene.objects["DefenderCamera"]
+
+                            # hide spawnpoints
+                            print("HIDING SPAWNPOINTS")
+                            if globaldictionary["spawnhidden"] == False:
+                                self.scene.objects["SpawnPointNorth"].visible = 0
+                                self.scene.objects["SpawnPointEast"].visible = 0
+                                self.scene.objects["SpawnPointSouth"].visible = 0
+                                self.scene.objects["SpawnPointWest"].visible = 0
+                                globaldictionary["spawnhidden"] = True
+
+                            self.owner["trackme"] = True
+
                         if self.role == "attacker":
                             print("adding attacker")
                             self.scene.addObject("attackerCamera", "attspawn")
-                            self.scene.addObject("defenderPlayer", "defspawn")
+                            #self.scene.addObject("defenderPlayer", "defspawn")
                             self.scene.active_camera = self.scene.objects["attackerCamera"]
                             self.playobj = self.scene.objects["attackerCamera"]
                         self.playobj["role"] = self.role
                         # declare enemy role
                         if self.role == "attacker":
                             self.enemyrole = "defender"
+                            self.scene.objects["defenderPlayer"]["role"] = self.enemyrole
                         else:
                             self.enemyrole = "attacker"
 
@@ -168,8 +191,7 @@ class Networking:
                                     print(role != self.role)
                                     if not self.enemyspawned and role != self.role:
                                         print("Adding object!! \n\n---------\n\n")
-                                        self.scene.addObject(
-                                            name)  # will be role/type in the future # you can add a location (with findbyobject)
+                                        self.scene.addObject(name)  # will be role/type in the future # you can add a location (with findbyobject)
                                         enemyobj = self.scene.objects[name]
 
                                         enemyobj["name"] = name
@@ -188,20 +210,21 @@ class Networking:
                     if key == "move":
                         print("got move request")
                         playerrole = data[key][0]
-                        print("looking for" + playerrole)
+                        print("looking for " + playerrole)
                         directionkey = data[key][1]
                         obj = self.getobjectbyid(playerrole)  # role is used as id here
                         if obj != None:
                             self.move(directionkey, obj)
                         else:
                             print("couldn't find object. here is the list")
+                            print(self.scene.objects)
 
                     if key == "shooting":
                         life_time = 120
                         velocity = 15
                         arrow = self.scene.objectsInactive["Arrow"]
-                        defender = self.scene.objects["defenderPlayer"]
-                        new_arrow = self.scene.addObject(arrow, defender, life_time)
+                        arrowspawn = self.scene.objects["ArrowSpawn"]
+                        new_arrow = self.scene.addObject(arrow, arrowspawn, life_time)
                         new_arrow.setLinearVelocity((0, velocity, 0), True)
 
         except Exception:
@@ -222,14 +245,25 @@ class Networking:
     def move(self, keypress, playerobject):
         # SPEEDS NEED TO BE TIMES 2 IF IT'S NOT YOURSELF. network crap I guess..
         print(playerobject)
+        right = 0.1
+        left = -0.1  # x negative
+        forward = 0.1
+        backward = -0.1  # y negative
+
+        if self.role == "attacker":
+            right = 0.2
+            left = -0.2
+            forward = 0.2
+            backward = -0.2
+
         if keypress == "w":
-            playerobject.applyMovement((0, 0.1, 0), True)
+            playerobject.applyMovement((0, forward, 0), True)
         if keypress == "a":
-            playerobject.applyMovement((-0.1, 0, 0), True)
+            playerobject.applyMovement((left, 0, 0), True)
         if keypress == "s":
-            playerobject.applyMovement((0, -0.1, 0), True)
+            playerobject.applyMovement((0, backward, 0), True)
         if keypress == "d":
-            playerobject.applyMovement((0.1, 0, 0), True)
+            playerobject.applyMovement((right, 0, 0), True)
         if keypress == self.stoptrap:
             playerobject.applyMovement((0, 0, 0), True)
 
@@ -263,7 +297,9 @@ class Networking:
         if mouseClick:
             if self.role == "defender":
                 self.sender({"shooting": "click", "role": self.role})
-            self.stoptrap = False
+                self.stoptrap = False
+            if self.role == "attacker":
+                pass
 
         else:
             if not self.stoptrap:  # if not stoptrap, send. else(just used it), don't send.
@@ -279,8 +315,8 @@ class Networking:
         else:
             message["role"] = self.role
 
-        print("Trying to send", message)
-        print(self.roomset)
+        #print("Trying to send", message)
+        #print(self.roomset)
         try:
             if self.roomset:  # to switch to the second socket
                 self.s2.send(bytes(json.dumps(message), "utf-8"))
