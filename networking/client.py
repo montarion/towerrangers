@@ -29,7 +29,7 @@ class Networking:
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.ipaddr = "192.168.178.31"
+        self.ipaddr = "192.168.2.2"
 
         self.s.connect((self.ipaddr, 5555))
 

@@ -3,10 +3,22 @@ scene = bge.logic.getCurrentScene()
 cont = bge.logic.getCurrentController()
 own = cont.owner
 
-own['timeLeft'] = 5
+own['timeLeft'] = 40
 own['wave'] = 1
+own['newWaveStarted'] = False
+own['waveEnded'] = True
+
+#if wave ended timeleft = 40
+#timeleft --
+#Waveended = False
+#newavestarted = True
+#timeleft = 300 sec
+#timeleft --
+#wave ++
+#Waveended = true
 
 def getSeconds(): 
+
     if own['timeLeft'] > 0:
         own['timeLeft'] -= 1 / (60 * 1)
         timeLeftRounded = round(own['timeLeft'], 2)
@@ -16,10 +28,5 @@ def getSeconds():
         own['wave'] += 1
         own['timeLeft'] = 5
         
-def resetSeconds():
-    cont['timer'] = cont['timeLeft']
-    scene.objects['TextTimeLeft'].text = str(cont['timer'])
-    
-
 
 
