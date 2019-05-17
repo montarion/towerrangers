@@ -1,10 +1,14 @@
 # fixed imports
-from time import sleep
 import socket, json, threading, sys, GameLogic, traceback, hashlib, os
 
 from bge import logic, events
+from time import sleep
 from savestate import globaldictionary
 
+
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto import Random
 
 # need to push 2 #
 
@@ -16,7 +20,7 @@ class Networking:
     def __init__(self):
         self.obj = logic.getCurrentController()
         self.owner = self.obj.owner
-        print("New session!\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+        print("New session!\n\n\n")
         print("Initializing network..")
         self.lastsent = ""
         self.role = "unknown"
@@ -24,14 +28,16 @@ class Networking:
         self.playerdicts = []
         self.roomset = False
         self.enemyspawned = False
+        self.encryptiondone = False
         self.stop = "µ"
         self.stoptrap = True  # if true, don't send.
         self.scene = GameLogic.getCurrentScene()
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #self.s.settimeout(10)
         self.s2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.ipaddr = "192.168.2.2"
+        self.ipaddr = "192.168.178.31"
 
         # blender dict stuff
 
@@ -39,27 +45,56 @@ class Networking:
         globaldictionary["spawnhidden"] = False
 
         self.s.connect((self.ipaddr, 5555))
-
+        #self.s.settimeout(0)
+        self.genkeys()
         print("Connected to server")
         self.sender({"cmd": "marco!"})
         threading.Thread(target=self.listener).start()
         # get self object
-        
 
 
+
+    def genkeys(self):
+        if globaldictionary["startupdone"] == False:
+            # encryption stuff
+            modulusLength = 1024
+            random_generator = Random.new().read
+            self.privateKey = RSA.generate(modulusLength, random_generator)  # De private key
+            publicKey = self.privateKey.publickey()  # De public key
+            self.exportPublicKey = publicKey.exportKey()  # export van de public key
+            print("Sending encryption keys")
+            self.s.send(self.exportPublicKey)
+            self.theirPublicKey = self.s.recv(1024).decode()
+            globaldictionary["startupdone"] = True
+
+
+        print("done with encryption stuff")
+
+
+    def encrypt(self, message):
+        # use their publickey to encrypt
+        encryptor = PKCS1_OAEP.new(RSA.importKey(self.theirPublicKey))
+        encrypted_msg = encryptor.encrypt(bytes(message, "utf-8"))
+        return encrypted_msg
+
+    def decrypt(self, message):
+        # use my private key to decrypt
+        decryptor = PKCS1_OAEP.new(self.privateKey)
+        decrypted_msg = decryptor.decrypt(message).decode("utf-8")
+        return decrypted_msg
 
     def listener(self):
         print("Started listener")
         while True:
             try:
                 if self.roomset:
-                    data = str(self.s2.recv(1024))[2:-1]
+                    data = self.s2.recv(1024)
                 else:
-                    data = str(self.s.recv(1024))[2:-1]
+                    data = self.s.recv(1024)
 
                 if data:
                     print("RECEIVED: " + str(data))
-                    self.process(data)
+                    self.process(self.decrypt(data))
             except Exception as e:
                 traceback.print_exc()
                 if self.roomset:
@@ -68,6 +103,36 @@ class Networking:
                     self.s.close()
                 print("LISTENER ERROR")
                 break
+
+
+
+
+    def sender(self, message, role=""):
+        print(message)
+        if role != "":
+            message["role"] = role
+        else:
+            message["role"] = self.role
+
+        try:
+            if self.roomset:  # to switch to the second socket
+                self.s2.send(self.encrypt(json.dumps(message)))
+                # print(self.s2)
+            elif not self.roomset:
+                self.s.send(self.encrypt(json.dumps(message)))
+                # print(self.s)
+
+            # print(self.s)
+
+            print("sent message")
+        except Exception as e:
+            traceback.print_exc()
+        except KeyboardInterrupt:
+            # self.s.close()
+            pass
+
+
+#########################
 
     def process(self, data):
         try:
@@ -267,9 +332,6 @@ class Networking:
         if keypress == self.stoptrap:
             playerobject.applyMovement((0, 0, 0), True)
 
-    def spawnobject(self):
-        # needs a "player"dict containing name, type, spawnlocation, and if type=minion, a goal.
-        pass
 
     def detectmovement(self):
         keyb = logic.keyboard
@@ -281,22 +343,22 @@ class Networking:
         mouseClick = logic.KX_INPUT_JUST_ACTIVATED == mouse.events[events.LEFTMOUSE]
         if wkey:
             #          print("Sending w")
-            self.sender({"keypress": "w", "role": self.role})
+            Networking().sender({"keypress": "w", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
         if akey:
             #            print("Sending a")
-            self.sender({"keypress": "a", "role": self.role})
+            Networking().sender({"keypress": "a", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
         if skey:
-            self.sender({"keypress": "s", "role": self.role})
+            Networking().sender({"keypress": "s", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
         if dkey:
             # print("Sending d")
-            self.sender({"keypress": "d", "role": self.role})
+            Networking().sender({"keypress": "d", "role": self.role})
             self.stoptrap = False  # now stop is allowed to be sent.
         if mouseClick:
             if self.role == "defender":
-                self.sender({"shooting": "click", "role": self.role})
+                Networking().sender({"shooting": "click", "role": self.role})
                 self.stoptrap = False
             if self.role == "attacker":
                 pass
@@ -304,39 +366,11 @@ class Networking:
         else:
             if not self.stoptrap:  # if not stoptrap, send. else(just used it), don't send.
                 # print sending stoptrap
-                self.sender({"keypress": self.stop, "role": self.role})
+                Networking().sender({"keypress": self.stop, "role": self.role})
                 self.stoptrap = True
         sleep(0.0001)
 
-    def sender(self, message, role=""):
-        print(message)
-        if role != "":
-            message["role"] = role
-        else:
-            message["role"] = self.role
-
-        #print("Trying to send", message)
-        #print(self.roomset)
-        try:
-            if self.roomset:  # to switch to the second socket
-                self.s2.send(bytes(json.dumps(message), "utf-8"))
-                # print(self.s2)
-            elif not self.roomset:
-                self.s.send(bytes(json.dumps(message), "utf-8"))
-                # print(self.s)
-
-            # print(self.s)
-
-            print("sent message")
-        except Exception as e:
-            traceback.print_exc()
-        except KeyboardInterrupt:
-            # self.s.close()
-            pass
-
-
 networking = Networking()
-
 
 def main():
     networking.detectmovement()

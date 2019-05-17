@@ -1,1 +1,1 @@
-globaldictionary = {}
+globaldictionary = {"startupdone":False}

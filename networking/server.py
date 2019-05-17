@@ -1,5 +1,7 @@
 import socket, random, json, threading, traceback, select
-from time import sleep
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto import Random
 # meed to push
 
 #TODO: get stats up and running for enemies, towers, and players( en tracking)
@@ -17,6 +19,7 @@ class Server:
         self.role = "empty"
         self.roomconndict = {}
 
+        self.encrypted = False
 
         self.roomdict = {1: [0, 60000]} # looks like {1: [0players/1player/2players, portnumber]}
         threading.Thread(target=self.room, args=[1, 60000]).start()
@@ -27,6 +30,24 @@ class Server:
         self.s.listen(50)
         self.processing = False
 
+        # encryption stuff
+        modulusLength = 1024
+        random_generator = Random.new().read
+        self.privateKey = RSA.generate(modulusLength, random_generator)  # De private key
+        publicKey = self.privateKey.publickey()  # De public key
+        self.exportPublicKey = publicKey.exportKey()  # export van de public key
+
+    def encrypt(self, message):
+        # use their publickey to encrypt
+        encryptor = PKCS1_OAEP.new(RSA.importKey(self.theirPublicKey))
+        encrypted_msg = encryptor.encrypt(bytes(message, "utf-8"))
+        return encrypted_msg
+
+    def decrypt(self, message):
+        # use my private key to decrypt
+        decryptor = PKCS1_OAEP.new(self.privateKey)
+        decrypted_msg = decryptor.decrypt(message).decode("utf-8")
+        return decrypted_msg
 
     def assign(self, conn):
 
@@ -64,21 +85,34 @@ class Server:
                 print("MAIN: accepted from " + str(ipaddr))
                 self.processing = True
 
-            data = str(self.conn.recv(1024))[2:-1]
-            #print("datatype1: ", type(data))
 
-            if len(data) > 2:
-                # filter data
-                if data.count("}") > 1:
-                    data = data.split("}")[0] + "}"
-                    print("HAD TO FILTER")
-                print("DATA IS: " + data)
-                self.process(data)
+            data = self.conn.recv(1024)
+            if self.encrypted == False:
+                self.theirPublicKey = data
+                self.conn.sendall(self.exportPublicKey)
+                # after first message change to encrypted
+                self.encrypted = True
+            else:
+
+
+
+                #print("datatype1: ", type(data))
+
+                if len(data) > 2:
+                    data = self.decrypt(data)
+                    print(data)
+                    # filter data
+                    if data.count("}") > 1:
+                        data = data.split("}")[0] + "}"
+                        print("HAD TO FILTER")
+                    print("DATA IS: " + data)
+
+                    self.process(data)
 
 
     def sender(self, conn, msg):
         try:
-            conn.send(bytes(json.dumps(msg), "utf-8"))
+            conn.send(self.encrypt(json.dumps(msg)))
             print("SENT")
         except Exception as e:
             traceback.print_exc()
