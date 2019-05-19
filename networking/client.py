@@ -11,7 +11,21 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto import Random
 
 # need to push 2 #
+# YOU MUST INSTALL "pycryptodome in blender. follow:
 
+'''
+in blender's python
+
+>>> import sys
+>>> sys.exec_prefix
+'/path/to/blender/python'
+
+in cmd:
+
+cd /path/to/blender/python/bin
+./python -m ensurepip
+./python -m pip install pycryptodome
+'''
 
 ### THIS IS THE CLIENT ###
 
@@ -65,23 +79,27 @@ class Networking:
             print("Sending encryption keys")
             self.s.send(self.exportPublicKey)
             self.theirPublicKey = self.s.recv(1024).decode()
+            globaldictionary["theirpubkey"] = self.theirPublicKey
             globaldictionary["startupdone"] = True
-
 
         print("done with encryption stuff")
 
 
-    def encrypt(self, message):
-        # use their publickey to encrypt
-        encryptor = PKCS1_OAEP.new(RSA.importKey(self.theirPublicKey))
-        encrypted_msg = encryptor.encrypt(bytes(message, "utf-8"))
-        return encrypted_msg
+#   def encrypt(self, message):
+#       # use their publickey to encrypt
+#       try:
+#           encryptor = PKCS1_OAEP.new(RSA.importKey(self.theirPublicKey))
+#       except:
+#           print("Trying to encrypt from dict")
+#           encryptor = PKCS1_OAEP.new(RSA.importKey(globaldictionary["theirpubkey"]))
+#       encrypted_msg = encryptor.encrypt(bytes(message, "utf-8"))
+#       return encrypted_msg
 
-    def decrypt(self, message):
-        # use my private key to decrypt
-        decryptor = PKCS1_OAEP.new(self.privateKey)
-        decrypted_msg = decryptor.decrypt(message).decode("utf-8")
-        return decrypted_msg
+#   def decrypt(self, message):
+#       # use my private key to decrypt
+#       decryptor = PKCS1_OAEP.new(self.privateKey)
+#       decrypted_msg = decryptor.decrypt(message).decode("utf-8")
+#       return decrypted_msg
 
     def listener(self):
         print("Started listener")
@@ -89,12 +107,36 @@ class Networking:
             try:
                 if self.roomset:
                     data = self.s2.recv(1024)
+
                 else:
                     data = self.s.recv(1024)
+                    #data = self.decrypt(data)
 
                 if data:
                     print("RECEIVED: " + str(data))
-                    self.process(self.decrypt(data))
+                    #self.process(self.decrypt(data))
+                    data = data.decode()
+                    datalist = []
+                    if "}{" in data:
+                        print("\n\n{}\n\n".format(data))
+                        data = data.split("}{")
+                        for d in data:
+                            if d[0] != "{":
+                                d = "{" + d
+                            if d[-1] != "}":
+                                d = d + "}"
+                            if str(d).count("{") < str(d).count("}"):
+                                d = "{" + d
+                            elif str(d).count("{") > str(d).count("}"):
+                                d = d + "}"
+
+                            data = d
+                            datalist.append(data)
+
+                        print("ROOM: HAD TO FILTER")
+                    else:
+                        datalist.append(data)
+                    self.process(datalist)
             except Exception as e:
                 traceback.print_exc()
                 if self.roomset:
@@ -116,10 +158,13 @@ class Networking:
 
         try:
             if self.roomset:  # to switch to the second socket
-                self.s2.send(self.encrypt(json.dumps(message)))
+                #self.s2.send(self.encrypt(json.dumps(message)))
+
+                self.s2.send(bytes(json.dumps(message), "utf-8"))
                 # print(self.s2)
             elif not self.roomset:
-                self.s.send(self.encrypt(json.dumps(message)))
+                #self.s.send(self.encrypt(json.dumps(message)))
+                self.s.send(bytes(json.dumps(message), "utf-8"))
                 # print(self.s)
 
             # print(self.s)
@@ -134,29 +179,31 @@ class Networking:
 
 #########################
 
-    def process(self, data):
+    def process(self, datalist):
+        #print(type(data))
         try:
             # filter bad dicts
-            datalist = []
-            if "}{" in data:
-                print("\n\n{}\n\n".format(data))
-                data = data.split("}{")
-                for d in data:
-                    if d[0] != "{":
-                        d = "{" + d
-                    if d[-1] != "}":
-                        d = d + "}"
-                    if str(d).count("{") < str(d).count("}"):
-                        d = "{" + d
-                    elif str(d).count("{") > str(d).count("}"):
-                        d = d + "}"
-
-                    data = d
-                    datalist.append(data)
-
-                print("ROOM: HAD TO FILTER")
-            else:
-                datalist.append(data)
+            #print(data)
+            #datalist = []
+            #if "}{" in data:
+            #    print("\n\n{}\n\n".format(data))
+            #    data = data.split("}{")
+            #    for d in data:
+            #        if d[0] != "{":
+            #            d = "{" + d
+            #        if d[-1] != "}":
+            #            d = d + "}"
+            #        if str(d).count("{") < str(d).count("}"):
+            #            d = "{" + d
+            #        elif str(d).count("{") > str(d).count("}"):
+            #            d = d + "}"
+#
+            #        data = d
+            #        datalist.append(data)
+#
+            #    print("ROOM: HAD TO FILTER")
+            #else:
+            #    datalist.append(data)
 
             for data in datalist:
                 data = json.loads(data)
@@ -174,10 +221,10 @@ class Networking:
                         if self.role == "defender":
                             print("adding defender")
                             #self.scene.addObject("defenderPlayer", "defspawn")
-                            self.playobj = self.scene.objects["defenderPlayer"]
+                            self.playobj = self.scene.objects["PlayerSETTINGS"]
                             #self.playobj = self.scene.objects["DefenderCamera"]
                             #print("switching def cam")
-                            self.scene.active_camera = self.scene.objects["DefenderCamera"]
+                            self.scene.active_camera = self.scene.objects["DefenderCamera.001"]
 
                             # hide spawnpoints
                             print("HIDING SPAWNPOINTS")
@@ -200,7 +247,7 @@ class Networking:
                         # declare enemy role
                         if self.role == "attacker":
                             self.enemyrole = "defender"
-                            self.scene.objects["defenderPlayer"]["role"] = self.enemyrole
+                            self.scene.objects["PlayerSETTINGS"]["role"] = self.enemyrole
                         else:
                             self.enemyrole = "attacker"
 
@@ -220,7 +267,7 @@ class Networking:
                         # print("Created new socket!")
                         self.s2.connect((self.ipaddr, portnumber))
                         print("connected to room")
-                        # print(self.s2)
+                        print(self.s2)
                         self.roomset = True  # socket switch
                         # room init
                         roominitdict = {"role": self.role, "name": "{}Player".format(self.role)}
@@ -277,9 +324,10 @@ class Networking:
                         playerrole = data[key][0]
                         print("looking for " + playerrole)
                         directionkey = data[key][1]
+                        orientation = data[key][2]
                         obj = self.getobjectbyid(playerrole)  # role is used as id here
                         if obj != None:
-                            self.move(directionkey, obj)
+                            self.move(directionkey, orientation, obj)
                         else:
                             print("couldn't find object. here is the list")
                             print(self.scene.objects)
@@ -294,26 +342,32 @@ class Networking:
 
         except Exception:
             print("Processing error!")
-            print(data)
+            print(datalist)
             traceback.print_exc()
 
     def getobjectbyid(self, id):
         print("getting id")
         for object in self.scene.objects:  # changed from objects to objectsInactive in a bid to increase performance
-
             try:
                 if object["role"] == id:
                     return object
             except:
                 pass
 
-    def move(self, keypress, playerobject):
+    def move(self, keypress, new_orientation, playerobject):
         # SPEEDS NEED TO BE TIMES 2 IF IT'S NOT YOURSELF. network crap I guess..
         print(playerobject)
         right = 0.1
         left = -0.1  # x negative
         forward = 0.1
         backward = -0.1  # y negative
+        if playerobject.name == "PlayerSETTINGS":
+
+            orientation = playerobject.worldOrientation.to_euler()
+            orientation.x = new_orientation[0]
+            orientation.y = new_orientation[2]
+            orientation.z = new_orientation[2]
+            playerobject.worldOrientation = orientation
 
         if self.role == "attacker":
             right = 0.2
@@ -341,24 +395,33 @@ class Networking:
         skey = logic.KX_INPUT_ACTIVE == keyb.events[events.SKEY]
         dkey = logic.KX_INPUT_ACTIVE == keyb.events[events.DKEY]
         mouseClick = logic.KX_INPUT_JUST_ACTIVATED == mouse.events[events.LEFTMOUSE]
+        orientationvalues = self.owner.localOrientation.to_euler()
+        orientationlist = [orientationvalues.x, orientationvalues.y, orientationvalues.z]
+        #print("local", str(orientationlist))
+
+        orientationvalues = self.owner.worldOrientation.to_euler()
+        orientationlist = [orientationvalues.x, orientationvalues.y, orientationvalues.z]
+
+        #print("world", str(orientationlist))
+
         if wkey:
             #          print("Sending w")
-            Networking().sender({"keypress": "w", "role": self.role})
+            self.sender({"keypress": "w", "role": self.role, "orientation": orientationlist})
             self.stoptrap = False  # now stop is allowed to be sent.
         if akey:
             #            print("Sending a")
-            Networking().sender({"keypress": "a", "role": self.role})
+            self.sender({"keypress": "a", "role": self.role, "orientation": orientationlist})
             self.stoptrap = False  # now stop is allowed to be sent.
         if skey:
-            Networking().sender({"keypress": "s", "role": self.role})
+            self.sender({"keypress": "s", "role": self.role, "orientation": orientationlist})
             self.stoptrap = False  # now stop is allowed to be sent.
         if dkey:
             # print("Sending d")
-            Networking().sender({"keypress": "d", "role": self.role})
+            self.sender({"keypress": "d", "role": self.role, "orientation": orientationlist})
             self.stoptrap = False  # now stop is allowed to be sent.
         if mouseClick:
             if self.role == "defender":
-                Networking().sender({"shooting": "click", "role": self.role})
+                self.sender({"shooting": "click", "role": self.role, "orientation": orientationlist})
                 self.stoptrap = False
             if self.role == "attacker":
                 pass
@@ -366,7 +429,7 @@ class Networking:
         else:
             if not self.stoptrap:  # if not stoptrap, send. else(just used it), don't send.
                 # print sending stoptrap
-                Networking().sender({"keypress": self.stop, "role": self.role})
+                self.sender({"keypress": self.stop, "role": self.role, "orientation": orientationlist})
                 self.stoptrap = True
         sleep(0.0001)
 

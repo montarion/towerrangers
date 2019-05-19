@@ -4,6 +4,9 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto import Random
 # meed to push
 
+# YOU MUST INSTALL PYCRYPTODOME
+
+
 #TODO: get stats up and running for enemies, towers, and players( en tracking)
 # TODO: make tower arrows their own thing so they can do more damage(see unitfollow.py for example)
 class Server:
