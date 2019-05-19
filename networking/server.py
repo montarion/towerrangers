@@ -10,6 +10,7 @@ class Server:
     def __init__(self):
         host = "0.0.0.0"
         port = 5555
+        self.buff = 1024
         addr = (host, port)
 
         self.connectiondict = {}
@@ -46,7 +47,12 @@ class Server:
     def decrypt(self, message):
         # use my private key to decrypt
         decryptor = PKCS1_OAEP.new(self.privateKey)
-        decrypted_msg = decryptor.decrypt(message).decode("utf-8")
+        try:
+            decrypted_msg = decryptor.decrypt(message).decode("utf-8")
+        except Exception as e:
+            print(e)
+            print("Data was:\n\n\n" + message.decode("utf-8"))
+            decrypted_msg = {"cmd": "Failure"}
         return decrypted_msg
 
     def assign(self, conn):
@@ -84,24 +90,24 @@ class Server:
                 self.conn, ipaddr = self.s.accept()
                 print("MAIN: accepted from " + str(ipaddr))
                 self.processing = True
+                self.encrypted = False
 
 
-            data = self.conn.recv(1024)
+            print("waiting...")
+            data = self.conn.recv(self.buff)
             if self.encrypted == False:
                 self.theirPublicKey = data
                 self.conn.sendall(self.exportPublicKey)
                 # after first message change to encrypted
                 self.encrypted = True
             else:
-
-
-
-                #print("datatype1: ", type(data))
-
+                # decrypt
+                data = data.decode()
                 if len(data) > 2:
-                    data = self.decrypt(data)
+                    #data = self.decrypt(data)
                     print(data)
                     # filter data
+                    print(type(data))
                     if data.count("}") > 1:
                         data = data.split("}")[0] + "}"
                         print("HAD TO FILTER")
@@ -112,7 +118,8 @@ class Server:
 
     def sender(self, conn, msg):
         try:
-            conn.send(self.encrypt(json.dumps(msg)))
+            #conn.send(self.encrypt(json.dumps(msg)))
+            conn.send(bytes(json.dumps(msg), "utf-8"))
             print("SENT")
         except Exception as e:
             traceback.print_exc()
@@ -259,6 +266,9 @@ class Server:
                     if self.roomdict[roomnumber][0] == 2:
                         print("THREAD: ROOM {} IS FULL".format(roomnumber))
                         #processing = True
+                        print("clearing pipes")
+                        #for conn in connlist:
+                        #    conn.recv(1000000)
                         roomfull = True
 
                 # get data from both clients:
@@ -267,14 +277,19 @@ class Server:
                     #print(roomconndict)
                     #data = str(conn.recv(1024))[2:-1]
                     # always listen to both sockets
-                    ready_socks, _, _ = select.select(connlist, [], [], 1)
+                    ready_socks, _, _ = select.select(connlist, [], [])
                     for sock in ready_socks:
-                        data = str(sock.recv(1024))[2:-1]  # This is will not block
+                        data = sock.recv(self.buff)  # This is will not block
+                        print(data)
+                        #data = self.decrypt(data)
                         print("received message:", data)
                         self.roomprocessing(data, conn, roomconndict)
                 else:
                     try:
-                        data = str(conn.recv(1024))[2:-1]
+                        data = conn.recv(self.buff)
+                        print(data)
+                        #data = self.decrypt(data)
+
                         self.roomprocessing(data, conn, roomconndict)
                     except TimeoutError: # non-fatal error for when nonblocking sockets have no data
                         print("no data...")
@@ -287,7 +302,10 @@ class Server:
         playerobject = {}
 
 
-        if data:
+        if data and len(data) > 3:
+            print("\n\n")
+            print(data)
+            data = data.decode()
             datalist = []
             if "}{" in data:
                 print("\n\n{}\n\n".format(data))
@@ -309,7 +327,10 @@ class Server:
                 datalist.append(data)
             try:
                 for data in datalist:
-                    data = json.loads(str(data).replace("'", "\""))
+                    try:
+                        data = json.loads(str(data).replace("'", "\""))
+                    except:
+                        continue
                     print("got data {}".format(str(data)))
                     #print("\n\n{}\n\n".format(data))
                     keylist = list(data.keys())
@@ -349,8 +370,9 @@ class Server:
                         if key == "keypress":
                             print("GOT KEYPRESSSSSS")
                             directionkey = data[key]
+                            orientation = data["orientation"]
 
-                            msg = {"move": [data["role"], directionkey]}
+                            msg = {"move": [data["role"], directionkey, orientation]}
 
                             for player in roomconndict:  # {"attacker": <socket>}
                                 self.sender(roomconndict[player], msg)
@@ -359,6 +381,8 @@ class Server:
 
                         if key == "shooting":
                             print("\n\n\n got shot request!\n\n\n")
+                            #orientation = data["orientation"]
+
                             msg = {"shooting": "shot"}
                             for player in roomconndict:
                                 self.sender(roomconndict[player], msg)
