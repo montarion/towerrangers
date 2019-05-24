@@ -1,5 +1,6 @@
 from bge import logic, events, render
 from client import networking
+from Tower import Tower
 
 scene = logic.getCurrentScene()
 render.showMouse(True)
@@ -14,4 +15,6 @@ if mouseClick:
     #spawn unit
     msg = {"spawn": {"minion":{"name":"Goblin", "location":"SpawnPointWest"}}}
     networking.sender(msg)
-    
+
+    # test to hurt base
+    tower.getTower()
